@@ -1,11 +1,11 @@
 package monitoring
 
-import akka.actor.{ActorSystem, Props}
-import com.typesafe.config.ConfigFactory
 import java.net._
 
+import akka.actor.{ActorSystem, Props}
 import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings}
-import monitoring.actor.QueryFederator
+import com.typesafe.config.ConfigFactory
+import monitoring.actor.{QueryFederator, SubQueryExecutor, SubQueryFederator}
 
 object App {
   def main(args: Array[String]): Unit = {
@@ -46,12 +46,27 @@ object App {
       // Create an Akka system
       val system = ActorSystem("Monitoring", config)
       // Create an actor that starts the sharding and sends random messages
+
       ClusterSharding(system).start(
         typeName = "QueryFederator",
         entityProps = Props[QueryFederator],
         settings = ClusterShardingSettings(system),
         extractEntityId = QueryFederator.extractEntityId,
         extractShardId = QueryFederator.extractShardId)
+
+      ClusterSharding(system).start(
+        typeName = "SubQueryFederator",
+        entityProps = Props[SubQueryFederator],
+        settings = ClusterShardingSettings(system),
+        extractEntityId = SubQueryFederator.extractEntityId,
+        extractShardId = SubQueryFederator.extractShardId)
+
+      ClusterSharding(system).start(
+        typeName = "SubQueryExecutor",
+        entityProps = Props[SubQueryExecutor],
+        settings = ClusterShardingSettings(system),
+        extractEntityId = SubQueryExecutor.extractEntityId,
+        extractShardId = SubQueryExecutor.extractShardId)
     }
   }
 }

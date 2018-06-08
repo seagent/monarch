@@ -175,6 +175,7 @@
           <root url="jar://$USER_HOME$/.ivy2/cache/org.scala-sbt/zinc_2.12/srcs/zinc_2.12-1.1.7-sources.jar!/" />
           <root url="jar://$USER_HOME$/.ivy2/cache/org.slf4j/slf4j-api/srcs/slf4j-api-1.7.25-sources.jar!/" />
           <root url="jar://$USER_HOME$/.ivy2/cache/org.spire-math/jawn-parser_2.12/srcs/jawn-parser_2.12-0.10.4-sources.jar!/" />
+          <root url="jar://$USER_HOME$/.ivy2/cache/org.scala-sbt/util-relation_2.12/srcs/util-relation_2.12-1.1.3-sources.jar!/" />
         </SOURCES>
       </library>
     </orderEntry>

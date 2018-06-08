@@ -4,24 +4,22 @@ import akka.actor.{Actor, ActorLogging}
 import akka.cluster.sharding.ShardRegion
 import monitoring.message.FederateQuery
 
-// Extract entity and shardId methods should be implemented
-
-object QueryFederator{
+object QueryFederator {
   val extractEntityId: ShardRegion.ExtractEntityId = {
-    case msg @ FederateQuery(id, _) => (id.toString, msg)
+    case msg@FederateQuery(query) => (query.hashCode.toString, msg)
   }
 
   private val numberOfShards = 100
 
   val extractShardId: ShardRegion.ExtractShardId = {
-    case FederateQuery(id, _) => (id % numberOfShards).toString
+    case FederateQuery(query) => (query.hashCode % numberOfShards).toString
   }
 }
 
-class QueryFederator extends Actor with ActorLogging{
+class QueryFederator extends Actor with ActorLogging {
 
   override def receive: Receive = {
-    case FederateQuery(id,query) =>
-      println(s"Query Id: $id, Query Value: $query")
+    case FederateQuery(query) =>
+      println(s"Query Hash Code: ${query.hashCode}, Query Value: $query")
   }
 }
