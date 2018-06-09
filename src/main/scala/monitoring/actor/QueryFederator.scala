@@ -1,8 +1,9 @@
 package monitoring.actor
 
 import akka.actor.{Actor, ActorLogging}
-import akka.cluster.sharding.ShardRegion
-import monitoring.message.FederateQuery
+import akka.cluster.sharding.{ClusterSharding, ShardRegion}
+import akka.event.Logging
+import monitoring.message.{FederateQuery, FederateSubQuery}
 
 object QueryFederator {
   val extractEntityId: ShardRegion.ExtractEntityId = {
@@ -19,7 +20,9 @@ object QueryFederator {
 class QueryFederator extends Actor with ActorLogging {
 
   override def receive: Receive = {
-    case FederateQuery(query) =>
-      println(s"Query Hash Code: ${query.hashCode}, Query Value: $query")
+    case fq@FederateQuery(query) =>
+      log.info("Hash Code for Federate Query: [{}], and Query Value: [{}]", fq.hashCode, query)
+      val subQueryFederatorRegion = ClusterSharding.get(context.system).shardRegion("SubQueryFederator")
+      subQueryFederatorRegion ! FederateSubQuery(query, "endpoint-1" :: "endpoint-2" :: "endpoint-3" :: Nil)
   }
 }

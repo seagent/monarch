@@ -18,6 +18,7 @@ object SubQueryExecutor {
 
 class SubQueryExecutor extends Actor with ActorLogging {
   override def receive: Receive = {
-    case esq @ ExecuteSubQuery(query,endpoint)=> println(s"Hash Code: ${esq.hashCode}, Query Value: $query, Endpoint: $endpoint")
+    case esq @ ExecuteSubQuery(query,endpoint)=>
+      log.info("Hash Code for Execute Sub Query: [{}], and Query Value: [{}], Endpoint Value: [{}]", esq.hashCode, query,endpoint)
   }
 }

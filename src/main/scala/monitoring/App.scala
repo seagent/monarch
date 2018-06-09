@@ -5,12 +5,13 @@ import java.net._
 import akka.actor.{ActorSystem, Props}
 import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings}
 import com.typesafe.config.ConfigFactory
-import monitoring.actor.{QueryFederator, SubQueryExecutor, SubQueryFederator}
+import monitoring.actor.{QueryFederator, SubQueryExecutor, SubQueryFederator, SubscriberAgent}
+import monitoring.message.Subscribe
 
 object App {
   def main(args: Array[String]): Unit = {
     if (args.isEmpty)
-      startup(Seq("2551", "2552", "0"))
+      startup(Seq("2551", "2552"))
     else
       startup(args)
   }
@@ -67,6 +68,12 @@ object App {
         settings = ClusterShardingSettings(system),
         extractEntityId = SubQueryExecutor.extractEntityId,
         extractShardId = SubQueryExecutor.extractShardId)
+
+      if (port == "2552") {
+        val subscriberAgent = system.actorOf(Props[SubscriberAgent])
+        subscriberAgent ! Subscribe("subscribe-query")
+      }
     }
+
   }
 }
