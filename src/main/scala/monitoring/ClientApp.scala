@@ -1,9 +1,10 @@
 package monitoring
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ActorPath, ActorSystem, Props}
+import akka.cluster.client.{ClusterClient, ClusterClientSettings}
 import com.typesafe.config.ConfigFactory
 import monitoring.actor.SubscriberAgent
-import monitoring.message.Subscribe
+import monitoring.message.{FederateQuery, Subscribe}
 
 object ClientApp {
     def main(args: Array[String]): Unit = {
@@ -13,7 +14,14 @@ object ClientApp {
 
       // Create an Akka system
       val system = ActorSystem("Subscribing", config)
-      val subscriberAgent=system.actorOf(Props[SubscriberAgent])
-      subscriberAgent!Subscribe("subscribe-query")
+
+      val initialContacts = Set(
+        ActorPath.fromString("akka://Monitoring@127.0.0.1:2551/system/receptionist"),
+        ActorPath.fromString("akka://Monitoring@127.0.0.1:2552/system/receptionist"))
+
+      val client = system.actorOf(ClusterClient.props(
+        ClusterClientSettings(system).withInitialContacts(initialContacts)), "client")
+      client ! ClusterClient.Send("/system/sharding/QueryFederator", FederateQuery("subscribe-query"), localAffinity = true)
+
     }
 }
