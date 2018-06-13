@@ -1,10 +1,9 @@
 package monitoring
 
-import akka.actor.{ActorPath, ActorSystem, Props}
+import akka.actor.{ActorPath, ActorSystem}
 import akka.cluster.client.{ClusterClient, ClusterClientSettings}
 import com.typesafe.config.ConfigFactory
-import monitoring.actor.SubscriberAgent
-import monitoring.message.{FederateQuery, Subscribe}
+import monitoring.message.FederateQuery
 
 object ClientApp {
     def main(args: Array[String]): Unit = {

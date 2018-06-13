@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+// Brought in from scalapb-runtime
+import "scalapb/scalapb.proto";
+import "google/protobuf/wrappers.proto";
+
+package monitoring.message;
+
+message FederateQuery{
+    string query=1;
+}
+
+message FederateSubQuery{
+    string query=1;
+    repeated string endpoints=2;
+}
+
+message ExecuteSubQuery{
+    string query=1;
+    string endpoint=2;
+}

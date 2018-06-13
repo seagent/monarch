@@ -2,7 +2,6 @@ package monitoring.actor
 
 import akka.actor.{Actor, ActorLogging}
 import akka.cluster.sharding.{ClusterSharding, ShardRegion}
-import akka.event.Logging
 import monitoring.message.{FederateQuery, FederateSubQuery}
 
 object QueryFederator {

@@ -1,3 +1,4 @@
 package monitoring.message
 
-case class FederateSubQuery (query: String, endpoints: List[String])
+@SerialVersionUID(51L)
+case class FederateSubQuery (query: String, endpoints: Seq[String]) extends Serializable

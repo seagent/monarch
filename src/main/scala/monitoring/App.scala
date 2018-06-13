@@ -6,8 +6,7 @@ import akka.actor.{ActorSystem, Props}
 import akka.cluster.client.ClusterClientReceptionist
 import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings}
 import com.typesafe.config.ConfigFactory
-import monitoring.actor.{QueryFederator, SubQueryExecutor, SubQueryFederator, SubscriberAgent}
-import monitoring.message.Subscribe
+import monitoring.actor.{QueryFederator, SubQueryExecutor, SubQueryFederator}
 
 object App {
   def main(args: Array[String]): Unit = {
@@ -72,10 +71,6 @@ object App {
         extractEntityId = SubQueryExecutor.extractEntityId,
         extractShardId = SubQueryExecutor.extractShardId)
 
-      /*if (port == "2552") {
-        val subscriberAgent = system.actorOf(Props[SubscriberAgent])
-        subscriberAgent ! Subscribe("subscribe-query")
-      }*/
     }
 
   }

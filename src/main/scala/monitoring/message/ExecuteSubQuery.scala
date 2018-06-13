@@ -1,3 +1,4 @@
 package monitoring.message
 
-case class ExecuteSubQuery(query:String, endpoint:String)
+@SerialVersionUID(52L)
+case class ExecuteSubQuery(query:String, endpoint:String) extends Serializable

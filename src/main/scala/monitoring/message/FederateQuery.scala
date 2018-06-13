@@ -1,3 +1,4 @@
 package monitoring.message
 
-case class FederateQuery(query: String)
+@SerialVersionUID(50L)
+case class FederateQuery(query: String) extends Serializable
