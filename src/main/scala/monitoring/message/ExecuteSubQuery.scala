@@ -1,4 +1,11 @@
 package monitoring.message
 
-@SerialVersionUID(52L)
-case class ExecuteSubQuery(query:String, endpoint:String) extends Serializable
+import play.api.libs.json.Json
+
+case class ExecuteSubQuery(query: String, endpoint: String)
+
+object ExecuteSubQuery {
+
+  implicit val esqFormats = Json.format[ExecuteSubQuery]
+
+}

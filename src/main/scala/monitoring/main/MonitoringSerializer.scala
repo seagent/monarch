@@ -1,9 +1,7 @@
 package monitoring.main
 
 import akka.serialization.Serializer
-import io.protoless.messages.{Decoder, Encoder}
 import monitoring.message.{ExecuteSubQuery, FederateQuery, FederateSubQuery}
-import io.protoless.generic.auto._
 import play.api.libs.json.Json
 
 class MonitoringSerializer extends Serializer {
@@ -23,15 +21,13 @@ class MonitoringSerializer extends Serializer {
   // "toBinary" serializes the given object to an Array of Bytes
   def toBinary(obj: AnyRef): Array[Byte] = {
 
-    //Json.toBytes(Json.toJson[FederateQuery](obj.asInstanceOf[FederateQuery]))
     obj match {
-      case fq: FederateQuery => Encoder[FederateQuery].encodeAsBytes(fq)
-      case fsq: FederateSubQuery => Encoder[FederateSubQuery].encodeAsBytes(fsq)
-      case esq: ExecuteSubQuery => Encoder[ExecuteSubQuery].encodeAsBytes(esq)
+      case fq: FederateQuery => Json.toBytes(Json.toJsObject(fq))
+      case fsq: FederateSubQuery => Json.toBytes(Json.toJsObject(fsq))
+      case esq: ExecuteSubQuery => Json.toBytes(Json.toJsObject(esq))
       case _ => Array[Byte]()
     }
 
-    //#...
   }
 
   // "fromBinary" deserializes the given array,
@@ -39,26 +35,11 @@ class MonitoringSerializer extends Serializer {
   def fromBinary(
                   bytes: Array[Byte],
                   clazz: Option[Class[_]]): AnyRef = {
-   /* val fq=classOf[FederateQuery]
-    val fsq=classOf[FederateSubQuery]
-    val esq=classOf[ExecuteSubQuery]
-    //Json.fromJson[clazz.type](Json.parse(bytes))
-    clazz.get match {
-      case fq=>Decoder[FederateQuery].decode(bytes).getOrElse().asInstanceOf[FederateQuery]
-      case fsq=>Decoder[FederateSubQuery].decode(bytes).getOrElse().asInstanceOf[FederateSubQuery]
-      case esq=>Decoder[ExecuteSubQuery].decode(bytes).getOrElse().asInstanceOf[ExecuteSubQuery]
-      case _=> null
-    }*/
-    if (clazz.get == classOf[FederateQuery]) {
-      return Decoder[FederateQuery].decode(bytes).getOrElse().asInstanceOf[FederateQuery]
+    clazz.get.getSimpleName match {
+      case "FederateQuery" => Json.parse(bytes).as[FederateQuery]
+      case "FederateSubQuery" => Json.parse(bytes).as[FederateSubQuery]
+      case "ExecuteSubQuery" => Json.parse(bytes).as[ExecuteSubQuery]
+      case _ => null
     }
-    else if (clazz.get == classOf[FederateSubQuery]) {
-      return Decoder[FederateSubQuery].decode(bytes).getOrElse().asInstanceOf[FederateSubQuery]
-    }
-    else if (clazz.get == classOf[ExecuteSubQuery]) {
-      return Decoder[ExecuteSubQuery].decode(bytes).getOrElse().asInstanceOf[ExecuteSubQuery]
-    }
-    return null
-    //Json.parse(bytes).as[FederateQuery]
   }
 }
