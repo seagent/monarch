@@ -6,7 +6,7 @@ import akka.actor.{ActorSystem, Props}
 import akka.cluster.client.ClusterClientReceptionist
 import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings}
 import com.typesafe.config.ConfigFactory
-import monitoring.actor.{QueryFederator, SubQueryExecutor, SubQueryFederator}
+import monitoring.actor._
 
 object App {
   def main(args: Array[String]): Unit = {
@@ -48,7 +48,7 @@ object App {
       val system = ActorSystem("Monitoring", config)
       // Create an actor that starts the sharding and sends random messages
 
-      val federatorRegion=ClusterSharding(system).start(
+      val federatorRegion = ClusterSharding(system).start(
         typeName = "QueryFederator",
         entityProps = Props[QueryFederator],
         settings = ClusterShardingSettings(system),
@@ -70,6 +70,20 @@ object App {
         settings = ClusterShardingSettings(system),
         extractEntityId = SubQueryExecutor.extractEntityId,
         extractShardId = SubQueryExecutor.extractShardId)
+
+      ClusterSharding(system).start(
+        typeName = "BucketDistributor",
+        entityProps = Props[BucketDistributor],
+        settings = ClusterShardingSettings(system),
+        extractEntityId = BucketDistributor.extractEntityId,
+        extractShardId = BucketDistributor.extractShardId)
+
+      ClusterSharding(system).start(
+        typeName = "HashJoinPerformer",
+        entityProps = Props[HashJoinPerformer],
+        settings = ClusterShardingSettings(system),
+        extractEntityId = HashJoinPerformer.extractEntityId,
+        extractShardId = HashJoinPerformer.extractShardId)
 
     }
 

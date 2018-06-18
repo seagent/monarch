@@ -4,8 +4,8 @@ import java.io.ByteArrayOutputStream
 
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.sharding.ShardRegion
+import com.hp.hpl.jena.query.{QueryExecutionFactory, ResultSetFormatter}
 import monitoring.message.{ExecuteSubQuery, Result}
-import org.apache.jena.query.{QueryExecutionFactory, ResultSetFormatter}
 
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 
