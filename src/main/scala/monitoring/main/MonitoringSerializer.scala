@@ -1,7 +1,7 @@
 package monitoring.main
 
 import akka.serialization.Serializer
-import monitoring.message.{ExecuteSubQuery, FederateQuery, FederateSubQuery}
+import monitoring.message._
 import play.api.libs.json.Json
 
 class MonitoringSerializer extends Serializer {
@@ -25,6 +25,9 @@ class MonitoringSerializer extends Serializer {
       case fq: FederateQuery => Json.toBytes(Json.toJsObject(fq))
       case fsq: FederateSubQuery => Json.toBytes(Json.toJsObject(fsq))
       case esq: ExecuteSubQuery => Json.toBytes(Json.toJsObject(esq))
+      case db: DistributeBuckets => Json.toBytes(Json.toJsObject(db))
+      case res: Result => Json.toBytes(Json.toJsObject(res))
+      case phj: PerformHashJoin => Json.toBytes(Json.toJsObject(phj))
       case _ => Array[Byte]()
     }
 
@@ -39,6 +42,9 @@ class MonitoringSerializer extends Serializer {
       case "FederateQuery" => Json.parse(bytes).as[FederateQuery]
       case "FederateSubQuery" => Json.parse(bytes).as[FederateSubQuery]
       case "ExecuteSubQuery" => Json.parse(bytes).as[ExecuteSubQuery]
+      case "DistributeBuckets" => Json.parse(bytes).as[DistributeBuckets]
+      case "Result" => Json.parse(bytes).as[Result]
+      case "PerformHashJoin" => Json.parse(bytes).as[PerformHashJoin]
       case _ => null
     }
   }

@@ -25,7 +25,7 @@ class SubQueryFederator extends Actor with ActorLogging {
 
   override def receive: Receive = {
     case fsq@FederateSubQuery(query, endpoints) =>
-      log.info("Hash Code for Federate Sub Query: [{}], and Query Value: [{}], Endpoint Values: [{}]", fsq.hashCode, query, endpoints)
+      //log.info("Hash Code for Federate Sub Query: [{}], and Query Value: [{}], Endpoint Values: [{}]", fsq.hashCode, query, endpoints)
       distribute(query, endpoints)
       registerSender
     case result@Result(_) =>
@@ -48,8 +48,8 @@ class SubQueryFederator extends Actor with ActorLogging {
 
   private def notifyRegisteryList(result: Result) = {
     registeryList foreach {
-      parent => {
-        parent ! result
+      registered => {
+        registered ! result
       }
     }
   }

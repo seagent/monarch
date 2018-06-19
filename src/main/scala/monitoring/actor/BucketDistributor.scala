@@ -49,7 +49,9 @@ class BucketDistributor extends Actor with ActorLogging {
 
       // get bucket iterators
       val bucketIterFirst = generateBucketMap(rsFirst, commonVars).values.iterator
+      println(bucketIterFirst.next)
       val bucketIterSecond = generateBucketMap(rsSecond, commonVars).values.iterator
+      //println(bucketIterSecond.next)
 
       // iterate over bucket iterators and perform hash join
       while (bucketIterFirst.hasNext && bucketIterSecond.hasNext) {
@@ -58,6 +60,7 @@ class BucketDistributor extends Actor with ActorLogging {
 
     case result@Result(_) =>
       bucketCount -= 1
+      log.info("Bucket count[{}]", bucketCount)
       val resultSet = result.toResultSet()
       insertResult(resultSet)
       if (bucketCount == 0) context.parent ! generateResult(resultSet.getResultVars.asScala, bindings)
@@ -65,6 +68,7 @@ class BucketDistributor extends Actor with ActorLogging {
   }
 
   def performHashJoin(hashJoinRegion: ActorRef, varsFirst: mutable.Buffer[String], varsSecond: mutable.Buffer[String], bucketIterFirst: Iterator[ArrayBuffer[Binding]], bucketIterSecond: Iterator[ArrayBuffer[Binding]]): Unit = {
+    log.info("Hash Join is gonna be Performed")
     bucketCount += 1
     val resultFirst = generateResult(varsFirst, bucketIterFirst.next)
     val resultSecond = generateResult(varsSecond, bucketIterSecond.next)
@@ -89,6 +93,7 @@ class BucketDistributor extends Actor with ActorLogging {
     commonVars
   }
 
+  //sorun burada
   def generateBucketMap(resultSet: ResultSet, commonVars: ArrayBuffer[String]): mutable.HashMap[Int, ArrayBuffer[Binding]] = {
     val bucketMap: mutable.HashMap[Int, ArrayBuffer[Binding]] = new mutable.HashMap[Int, ArrayBuffer[Binding]]() {
       override def default(key: Int) = new ArrayBuffer[Binding]()

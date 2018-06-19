@@ -34,31 +34,40 @@ class QueryFederator extends Actor with ActorLogging {
 
   override def receive: Receive = {
     case fq@FederateQuery(query) =>
-      log.info("Hash Code for Federate Query: [{}], and Query Value: [{}]", fq.hashCode, query)
+      //log.info("Hash Code for Federate Query: [{}], and Query Value: [{}]", fq.hashCode, query)
       val subQueryFederatorRegion = ClusterSharding.get(context.system).shardRegion("SubQueryFederator")
       val directedQueries = QueryManager.splitFederatedQuery(query, new util.ArrayList[Union])
-      expectedCount = directedQueries.size
+      expectedCount = directedQueries.size - 1
       distribute(subQueryFederatorRegion, directedQueries)
       registerSender
     case receivedResult@Result(_) =>
       val receivedRs = receivedResult.toResultSet()
       // get hash join performer region
       val bucketDistributorRegion = ClusterSharding.get(context.system).shardRegion("BucketDistributor")
-      results foreach {
-        result => {
-          val innerRs = result.toResultSet()
-          if (QueryManager.matchAnyVar(receivedRs.getResultVars, innerRs.getResultVars)) {
-            results -= result
-            bucketDistributorRegion ! DistributeBuckets(receivedResult, result)
-            expectedCount -= 1
-            break
+      log.info("Expected Count: [{}], Result Size [{}]", expectedCount, results.size)
+      var matched = false
+      breakable {
+        results foreach {
+          result => {
+            log.info("Döngünün içindeyiz ve resultları dolaşıyoruz")
+            val innerRs = result.toResultSet()
+            if (QueryManager.matchAnyVar(receivedRs.getResultVars, innerRs.getResultVars)) {
+              results -= result
+              bucketDistributorRegion ! DistributeBuckets(receivedResult, result)
+              expectedCount -= 1
+              log.info("Yeni Expected Count: [{}], Result Size [{}]", expectedCount, results.size)
+              matched = true
+              break
+            }
           }
         }
       }
-      results += receivedResult
+      if (!matched)
+        results += receivedResult
+
       if (expectedCount == 0 && results.size == 1) {
-        notifyRegisteryList(receivedResult)
         ResultSetFormatter.out(receivedRs)
+        //notifyRegisteryList(receivedResult)
         //log.info("Query Result has been completed as [{}]", receivedResult)
       }
   }
