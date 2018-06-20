@@ -14,7 +14,7 @@ object SubQueryExecutor {
     case esq@ExecuteSubQuery(_, _) => (esq.hashCode.toString, esq)
   }
 
-  private val numberOfShards = 100
+  private val numberOfShards = 20
 
   val extractShardId: ShardRegion.ExtractShardId = {
     case esq@ExecuteSubQuery(_, _) => (esq.hashCode % numberOfShards).toString

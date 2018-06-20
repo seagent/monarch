@@ -18,7 +18,7 @@ object QueryFederator {
     case msg@FederateQuery(query) => (query.hashCode.toString, msg)
   }
 
-  private val numberOfShards = 100
+  private val numberOfShards = 20
 
   val extractShardId: ShardRegion.ExtractShardId = {
     case FederateQuery(query) => (query.hashCode % numberOfShards).toString
@@ -29,11 +29,10 @@ class QueryFederator extends Actor with ActorLogging {
 
   private var expectedCount = 0
   private val results: ArrayBuffer[Result] = ArrayBuffer.empty
-  private val resultMap: mutable.HashMap[FederateQuery, Result] = mutable.HashMap.empty
   private val registeryList: mutable.ArrayBuffer[ActorRef] = mutable.ArrayBuffer.empty
 
   override def receive: Receive = {
-    case fq@FederateQuery(query) =>
+    case FederateQuery(query) =>
       //log.info("Hash Code for Federate Query: [{}], and Query Value: [{}]", fq.hashCode, query)
       val subQueryFederatorRegion = ClusterSharding.get(context.system).shardRegion("SubQueryFederator")
       val directedQueries = QueryManager.splitFederatedQuery(query, new util.ArrayList[Union])
@@ -44,18 +43,15 @@ class QueryFederator extends Actor with ActorLogging {
       val receivedRs = receivedResult.toResultSet()
       // get hash join performer region
       val bucketDistributorRegion = ClusterSharding.get(context.system).shardRegion("BucketDistributor")
-      log.info("Expected Count: [{}], Result Size [{}]", expectedCount, results.size)
       var matched = false
       breakable {
         results foreach {
           result => {
-            log.info("Döngünün içindeyiz ve resultları dolaşıyoruz")
             val innerRs = result.toResultSet()
             if (QueryManager.matchAnyVar(receivedRs.getResultVars, innerRs.getResultVars)) {
               results -= result
               bucketDistributorRegion ! DistributeBuckets(receivedResult, result)
               expectedCount -= 1
-              log.info("Yeni Expected Count: [{}], Result Size [{}]", expectedCount, results.size)
               matched = true
               break
             }
@@ -65,11 +61,10 @@ class QueryFederator extends Actor with ActorLogging {
       if (!matched)
         results += receivedResult
 
-      if (expectedCount == 0 && results.size == 1) {
+      // if query completed print result
+      if (expectedCount == 0 && results.size == 1)
         ResultSetFormatter.out(receivedRs)
-        //notifyRegisteryList(receivedResult)
-        //log.info("Query Result has been completed as [{}]", receivedResult)
-      }
+
   }
 
   private def distribute(subQueryFederatorRegion: ActorRef, directedQueries: util.List[DirectedQuery]) = {

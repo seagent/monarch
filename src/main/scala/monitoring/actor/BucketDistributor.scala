@@ -13,16 +13,17 @@ import tr.edu.ege.seagent.boundarq.filterbound.MultipleNode
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer}
 
 object BucketDistributor {
-  val SPLIT_COUNT = 20
+
+  val splitCount = 20
 
   val extractEntityId: ShardRegion.ExtractEntityId = {
     case dbs@DistributeBuckets(_, _) => (dbs.hashCode.toString, dbs)
   }
 
-  private val numberOfShards = 100
+  private val numberOfShards = 20
 
   val extractShardId: ShardRegion.ExtractShardId = {
     case dbs@DistributeBuckets(_, _) => (dbs.hashCode % numberOfShards).toString
@@ -31,44 +32,55 @@ object BucketDistributor {
 
 class BucketDistributor extends Actor with ActorLogging {
 
-  var bucketCount = 0
-  val bindings: ArrayBuffer[Binding] = ArrayBuffer.empty
+  private var bucketCount = 0
+  private val bindings: ArrayBuffer[Binding] = ArrayBuffer.empty
+  private val registeryList: mutable.ArrayBuffer[ActorRef] = mutable.ArrayBuffer.empty
 
   override def receive: Receive = {
 
     case DistributeBuckets(firstRes, secondRes) =>
-      // get hash join performer region
-      val hashJoinRegion = ClusterSharding.get(context.system).shardRegion("HashJoinPerformer")
-
-      // convert results to result sets
-      val rsFirst = firstRes.toResultSet()
-      val rsSecond = secondRes.toResultSet()
-
-      // find common vars between result sets
-      val commonVars = findCommonVars(rsFirst.getResultVars.asScala, rsSecond.getResultVars.asScala)
-
-      // get bucket iterators
-      val bucketIterFirst = generateBucketMap(rsFirst, commonVars).values.iterator
-      println(bucketIterFirst.next)
-      val bucketIterSecond = generateBucketMap(rsSecond, commonVars).values.iterator
-      //println(bucketIterSecond.next)
-
-      // iterate over bucket iterators and perform hash join
-      while (bucketIterFirst.hasNext && bucketIterSecond.hasNext) {
-        performHashJoin(hashJoinRegion, rsFirst.getResultVars.asScala, rsSecond.getResultVars.asScala, bucketIterFirst, bucketIterSecond)
-      }
+      distributeBuckets(firstRes, secondRes)
 
     case result@Result(_) =>
-      bucketCount -= 1
-      log.info("Bucket count[{}]", bucketCount)
-      val resultSet = result.toResultSet()
-      insertResult(resultSet)
-      if (bucketCount == 0) context.parent ! generateResult(resultSet.getResultVars.asScala, bindings)
+      handleJoinResult(result)
 
   }
 
+  private def handleJoinResult(result: Result) = {
+    bucketCount -= 1
+    val resultSet = result.toResultSet()
+    insertResult(resultSet)
+    // if join has completed notify join result
+    if (bucketCount == 0) {
+      val result = generateResult(resultSet.getResultVars.asScala, bindings)
+      notifyRegisteryList(result)
+    }
+  }
+
+  private def distributeBuckets(firstRes: Result, secondRes: Result) = {
+    // get hash join performer region
+    val hashJoinRegion = ClusterSharding.get(context.system).shardRegion("HashJoinPerformer")
+
+    registerSender
+
+    // convert results to result sets
+    val rsFirst = firstRes.toResultSet()
+    val rsSecond = secondRes.toResultSet()
+
+    // find common vars between result sets
+    val commonVars = findCommonVars(rsFirst.getResultVars.asScala, rsSecond.getResultVars.asScala)
+
+    // get bucket iterators
+    val bucketIterFirst = generateBucketMap(rsFirst, commonVars).values.iterator
+    val bucketIterSecond = generateBucketMap(rsSecond, commonVars).values.iterator
+
+    // iterate over bucket iterators and perform hash join
+    while (bucketIterFirst.hasNext && bucketIterSecond.hasNext) {
+      performHashJoin(hashJoinRegion, rsFirst.getResultVars.asScala, rsSecond.getResultVars.asScala, bucketIterFirst, bucketIterSecond)
+    }
+  }
+
   def performHashJoin(hashJoinRegion: ActorRef, varsFirst: mutable.Buffer[String], varsSecond: mutable.Buffer[String], bucketIterFirst: Iterator[ArrayBuffer[Binding]], bucketIterSecond: Iterator[ArrayBuffer[Binding]]): Unit = {
-    log.info("Hash Join is gonna be Performed")
     bucketCount += 1
     val resultFirst = generateResult(varsFirst, bucketIterFirst.next)
     val resultSecond = generateResult(varsSecond, bucketIterSecond.next)
@@ -93,25 +105,28 @@ class BucketDistributor extends Actor with ActorLogging {
     commonVars
   }
 
-  //sorun burada
   def generateBucketMap(resultSet: ResultSet, commonVars: ArrayBuffer[String]): mutable.HashMap[Int, ArrayBuffer[Binding]] = {
-    val bucketMap: mutable.HashMap[Int, ArrayBuffer[Binding]] = new mutable.HashMap[Int, ArrayBuffer[Binding]]() {
-      override def default(key: Int) = new ArrayBuffer[Binding]()
+    val bucketMap: mutable.HashMap[Int, ArrayBuffer[Binding]] = mutable.HashMap.empty
+
+    for (i <- 0 until BucketDistributor.splitCount) {
+      bucketMap += (i -> ArrayBuffer.empty[Binding])
     }
 
     while (resultSet.hasNext) {
       val binding = resultSet.nextBinding
       val multipleNode = getMultipleNode(commonVars, binding)
       val index = findIndex(multipleNode)
-      bucketMap(index) += binding
+      val bindings = bucketMap(index)
+      bindings += binding
+      bucketMap += (index -> bindings)
     }
 
     bucketMap
   }
 
   private def findIndex(multipleNode: MultipleNode) = {
-    var index = multipleNode.hashCode % BucketDistributor.SPLIT_COUNT
-    if (index < 0) index += BucketDistributor.SPLIT_COUNT
+    var index = multipleNode.hashCode % BucketDistributor.splitCount
+    if (index < 0) index += BucketDistributor.splitCount
     index
   }
 
@@ -126,6 +141,20 @@ class BucketDistributor extends Actor with ActorLogging {
   private def insertResult(resultSet: ResultSet): Unit = {
     while (resultSet.hasNext) {
       bindings += resultSet.nextBinding
+    }
+  }
+
+  private def registerSender = {
+    if (!registeryList.contains(sender)) {
+      registeryList += sender
+    }
+  }
+
+  private def notifyRegisteryList(result: Result) = {
+    registeryList foreach {
+      registered => {
+        registered ! result
+      }
     }
   }
 

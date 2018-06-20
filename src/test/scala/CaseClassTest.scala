@@ -1,5 +1,9 @@
+import com.hp.hpl.jena.sparql.engine.binding.Binding
 import monitoring.message.{ExecuteSubQuery, FederateSubQuery}
 import org.scalatest._
+
+import scala.collection.mutable.HashMap
+import scala.collection.mutable.ArrayBuffer
 
 class CaseClassTest extends FlatSpec with Matchers {
 
@@ -15,6 +19,12 @@ class CaseClassTest extends FlatSpec with Matchers {
     val fsqDifferent = new FederateSubQuery("query-3", "endpoint-3" :: Nil)
     assert(fsq == fsqSame)
     assert(fsq != fsqDifferent)
+
+
+    val bucketMap: HashMap[Int, ArrayBuffer[String]] = HashMap.empty
+    val vector = bucketMap.getOrElse(3, ArrayBuffer.empty[String])
+    vector += "naber"
+    bucketMap += (3 -> vector)
   }
 
 }
