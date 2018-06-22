@@ -4,7 +4,8 @@ import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.sharding.{ClusterSharding, ShardRegion}
 import monitoring.message.{ExecuteSubQuery, FederateSubQuery, Result}
 
-import scala.collection.mutable.{ArrayBuffer, HashMap}
+import scala.collection.immutable.HashMap
+
 
 object SubQueryFederator {
   val extractEntityId: ShardRegion.ExtractEntityId = {
@@ -20,11 +21,11 @@ object SubQueryFederator {
 
 class SubQueryFederator extends Actor with ActorLogging {
 
-  private val resultMap: HashMap[FederateSubQuery, Result] = HashMap.empty
-  private val registeryList: ArrayBuffer[ActorRef] = ArrayBuffer.empty
+  private var resultMap: HashMap[FederateSubQuery, Result] = HashMap.empty
+  private var registeryList: Vector[ActorRef] = Vector.empty
 
   override def receive: Receive = {
-    case fsq@FederateSubQuery(query, endpoints) =>
+    case FederateSubQuery(query, endpoints) =>
       //log.info("Hash Code for Federate Sub Query: [{}], and Query Value: [{}], Endpoint Values: [{}]", fsq.hashCode, query, endpoints)
       distribute(query, endpoints)
       registerSender
@@ -42,7 +43,7 @@ class SubQueryFederator extends Actor with ActorLogging {
 
   private def registerSender = {
     if (!registeryList.contains(sender)) {
-      registeryList += sender
+      registeryList = registeryList :+ sender
     }
   }
 

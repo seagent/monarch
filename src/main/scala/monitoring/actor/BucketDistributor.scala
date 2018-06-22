@@ -12,8 +12,8 @@ import monitoring.message.{DistributeBuckets, PerformHashJoin, Result}
 import tr.edu.ege.seagent.boundarq.filterbound.MultipleNode
 
 import scala.collection.JavaConverters._
+import scala.collection.immutable.HashMap
 import scala.collection.mutable
-import scala.collection.mutable.{ArrayBuffer}
 
 object BucketDistributor {
 
@@ -33,8 +33,8 @@ object BucketDistributor {
 class BucketDistributor extends Actor with ActorLogging {
 
   private var bucketCount = 0
-  private val bindings: ArrayBuffer[Binding] = ArrayBuffer.empty
-  private val registeryList: mutable.ArrayBuffer[ActorRef] = mutable.ArrayBuffer.empty
+  private var bindings: Vector[Binding] = Vector.empty
+  private var registeryList: Vector[ActorRef] = Vector.empty
 
   override def receive: Receive = {
 
@@ -80,36 +80,36 @@ class BucketDistributor extends Actor with ActorLogging {
     }
   }
 
-  def performHashJoin(hashJoinRegion: ActorRef, varsFirst: mutable.Buffer[String], varsSecond: mutable.Buffer[String], bucketIterFirst: Iterator[ArrayBuffer[Binding]], bucketIterSecond: Iterator[ArrayBuffer[Binding]]): Unit = {
+  def performHashJoin(hashJoinRegion: ActorRef, varsFirst: mutable.Buffer[String], varsSecond: mutable.Buffer[String], bucketIterFirst: Iterator[Vector[Binding]], bucketIterSecond: Iterator[Vector[Binding]]): Unit = {
     bucketCount += 1
     val resultFirst = generateResult(varsFirst, bucketIterFirst.next)
     val resultSecond = generateResult(varsSecond, bucketIterSecond.next)
     hashJoinRegion ! PerformHashJoin(resultFirst, resultSecond)
   }
 
-  private def generateResult(vars: mutable.Buffer[String], bucket: ArrayBuffer[Binding]): Result = {
+  private def generateResult(vars: mutable.Buffer[String], bucket: Vector[Binding]): Result = {
     val outputStream = new ByteArrayOutputStream
     ResultSetFormatter.outputAsJSON(outputStream, ResultSetFactory.create(new QueryIterCollection(bucket.asJava), vars.asJava))
     Result(new String(outputStream.toByteArray))
   }
 
-  def findCommonVars(varsFirst: mutable.Buffer[String], varsSecond: mutable.Buffer[String]): mutable.ArrayBuffer[String] = {
-    val commonVars: ArrayBuffer[String] = mutable.ArrayBuffer.empty
+  def findCommonVars(varsFirst: mutable.Buffer[String], varsSecond: mutable.Buffer[String]): Vector[String] = {
+    var commonVars: Vector[String] = Vector.empty
     varsFirst foreach {
       variable => {
         if (varsSecond.contains(variable)) {
-          commonVars += variable
+          commonVars = commonVars :+ variable
         }
       }
     }
     commonVars
   }
 
-  def generateBucketMap(resultSet: ResultSet, commonVars: ArrayBuffer[String]): mutable.HashMap[Int, ArrayBuffer[Binding]] = {
-    val bucketMap: mutable.HashMap[Int, ArrayBuffer[Binding]] = mutable.HashMap.empty
+  def generateBucketMap(resultSet: ResultSet, commonVars: Vector[String]): HashMap[Int, Vector[Binding]] = {
+    var bucketMap: HashMap[Int, Vector[Binding]] = HashMap.empty
 
     for (i <- 0 until BucketDistributor.splitCount) {
-      bucketMap += (i -> ArrayBuffer.empty[Binding])
+      bucketMap += (i -> Vector.empty[Binding])
     }
 
     while (resultSet.hasNext) {
@@ -117,8 +117,8 @@ class BucketDistributor extends Actor with ActorLogging {
       val multipleNode = getMultipleNode(commonVars, binding)
       val index = findIndex(multipleNode)
       val bindings = bucketMap(index)
-      bindings += binding
-      bucketMap += (index -> bindings)
+      val newBindings = bindings :+ binding
+      bucketMap += (index -> newBindings)
     }
 
     bucketMap
@@ -130,7 +130,7 @@ class BucketDistributor extends Actor with ActorLogging {
     index
   }
 
-  def getMultipleNode(commonVars: ArrayBuffer[String], binding: Binding): MultipleNode = {
+  def getMultipleNode(commonVars: Vector[String], binding: Binding): MultipleNode = {
     val multipleNode = new MultipleNode
     for (commonVar <- commonVars) {
       multipleNode.add(binding.get(Var.alloc(commonVar)))
@@ -140,13 +140,13 @@ class BucketDistributor extends Actor with ActorLogging {
 
   private def insertResult(resultSet: ResultSet): Unit = {
     while (resultSet.hasNext) {
-      bindings += resultSet.nextBinding
+      bindings = bindings :+ resultSet.nextBinding
     }
   }
 
   private def registerSender = {
     if (!registeryList.contains(sender)) {
-      registeryList += sender
+      registeryList = registeryList :+ sender
     }
   }
 

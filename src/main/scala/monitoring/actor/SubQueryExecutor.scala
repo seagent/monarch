@@ -7,7 +7,7 @@ import akka.cluster.sharding.ShardRegion
 import com.hp.hpl.jena.query.{QueryExecutionFactory, ResultSetFormatter}
 import monitoring.message.{ExecuteSubQuery, Result}
 
-import scala.collection.mutable.{ArrayBuffer, HashMap}
+import scala.collection.immutable.HashMap
 
 object SubQueryExecutor {
   val extractEntityId: ShardRegion.ExtractEntityId = {
@@ -23,14 +23,14 @@ object SubQueryExecutor {
 
 class SubQueryExecutor extends Actor with ActorLogging {
 
-  private val resultMap: HashMap[ExecuteSubQuery, Result] = HashMap.empty
-  private val registeryList: ArrayBuffer[ActorRef] = ArrayBuffer.empty
+  private var resultMap: HashMap[ExecuteSubQuery, Result] = HashMap.empty
+  private var registeryList: Vector[ActorRef] = Vector.empty
 
   override def receive: Receive = {
     case esq@ExecuteSubQuery(query, endpoint) =>
       //log.info("Hash Code for Execute Sub Query: [{}], and Query Value: [{}], Endpoint Value: [{}]", esq.hashCode, query, endpoint)
       val result = executeQuery(query, endpoint)
-      resultMap += esq -> result
+      resultMap += (esq -> result)
       registerSender
       notifyRegisteryList(result)
   }
@@ -55,7 +55,7 @@ class SubQueryExecutor extends Actor with ActorLogging {
 
   private def registerSender = {
     if (!registeryList.contains(sender)) {
-      registeryList += sender
+      registeryList = registeryList :+ sender
     }
   }
 

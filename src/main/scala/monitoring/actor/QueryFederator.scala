@@ -6,11 +6,10 @@ import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.sharding.{ClusterSharding, ShardRegion}
 import com.hp.hpl.jena.query.ResultSetFormatter
 import main.{DirectedQuery, QueryManager, Union}
-import monitoring.message.{DistributeBuckets, FederateQuery, FederateSubQuery, Result}
+import monitoring.message._
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.immutable.HashMap
 import scala.util.control.Breaks._
 
 object QueryFederator {
@@ -28,8 +27,9 @@ object QueryFederator {
 class QueryFederator extends Actor with ActorLogging {
 
   private var expectedCount = 0
-  private val results: ArrayBuffer[Result] = ArrayBuffer.empty
-  private val registeryList: mutable.ArrayBuffer[ActorRef] = mutable.ArrayBuffer.empty
+  private var results: Vector[Result] = Vector.empty
+  private var registeryList: Vector[ActorRef] = Vector.empty
+  private var resultMap: HashMap[FederateQuery, Result] = HashMap.empty
 
   override def receive: Receive = {
     case FederateQuery(query) =>
@@ -49,7 +49,7 @@ class QueryFederator extends Actor with ActorLogging {
           result => {
             val innerRs = result.toResultSet()
             if (QueryManager.matchAnyVar(receivedRs.getResultVars, innerRs.getResultVars)) {
-              results -= result
+              results = results.filterNot(res => res == result)
               bucketDistributorRegion ! DistributeBuckets(receivedResult, result)
               expectedCount -= 1
               matched = true
@@ -59,7 +59,7 @@ class QueryFederator extends Actor with ActorLogging {
         }
       }
       if (!matched)
-        results += receivedResult
+        results = results :+ receivedResult
 
       // if query completed print result
       if (expectedCount == 0 && results.size == 1)
@@ -77,7 +77,7 @@ class QueryFederator extends Actor with ActorLogging {
 
   private def registerSender = {
     if (!registeryList.contains(sender)) {
-      registeryList += sender
+      registeryList = registeryList :+ sender
     }
   }
 
