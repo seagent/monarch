@@ -25,11 +25,15 @@ class CaseClassTest extends FlatSpec with Matchers {
     val vector = bucketMap.getOrElse(3, ArrayBuffer.empty[String])
     vector += "naber"
     bucketMap += (3 -> vector)
+    println(bucketMap.getOrElse(4,update))
 
     var res = new Result("")
     res.resultJSON :+ "Naber"
     res=res
     println(res)
+
+    var result = None: Option[Result]
   }
+  def update{}
 
 }

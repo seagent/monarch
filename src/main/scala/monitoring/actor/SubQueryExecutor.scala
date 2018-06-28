@@ -25,20 +25,24 @@ class SubQueryExecutor extends Actor with ActorLogging {
 
   private var resultMap: HashMap[ExecuteSubQuery, Result] = HashMap.empty
   private var registeryList: Vector[ActorRef] = Vector.empty
+  private var queryResult: Option[Result] = None
 
   override def receive: Receive = {
     case esq@ExecuteSubQuery(query, endpoint) =>
       log.info("Hash Code for Execute Sub Query: [{}], and Query Value: [{}], Endpoint Value: [{}]", esq.hashCode, query, endpoint)
+      registerSender
       val result = executeQuery(query, endpoint)
       resultMap += (esq -> result)
-      registerSender
-      notifyRegisteryList(result)
+      if (queryResult.isEmpty || queryResult.getOrElse() != result) {
+        queryResult = Some(result)
+        notifyRegisteryList()
+      }
   }
 
-  private def notifyRegisteryList(result: Result) = {
+  private def notifyRegisteryList() = {
     registeryList foreach {
       registered => {
-        registered ! result
+        registered ! queryResult.getOrElse()
       }
     }
   }
@@ -54,7 +58,7 @@ class SubQueryExecutor extends Actor with ActorLogging {
   }
 
   private def registerSender = {
-    if (!registeryList.contains(sender)) {
+    if (!registeryList.contains(sender) && sender != self) {
       registeryList = registeryList :+ sender
     }
   }

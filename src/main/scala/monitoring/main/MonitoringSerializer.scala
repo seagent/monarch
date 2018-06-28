@@ -45,7 +45,7 @@ class MonitoringSerializer extends Serializer {
       case "DistributeBuckets" => Json.parse(bytes).as[DistributeBuckets]
       case "Result" => Json.parse(bytes).as[Result]
       case "PerformHashJoin" => Json.parse(bytes).as[PerformHashJoin]
-      case _ => null
+      case _ => None
     }
   }
 }
