@@ -1,5 +1,5 @@
 import com.hp.hpl.jena.sparql.engine.binding.Binding
-import monitoring.message.{ExecuteSubQuery, FederateSubQuery}
+import monitoring.message.{ExecuteSubQuery, FederateSubQuery, Result}
 import org.scalatest._
 
 import scala.collection.mutable.HashMap
@@ -25,6 +25,11 @@ class CaseClassTest extends FlatSpec with Matchers {
     val vector = bucketMap.getOrElse(3, ArrayBuffer.empty[String])
     vector += "naber"
     bucketMap += (3 -> vector)
+
+    var res = new Result("")
+    res.resultJSON :+ "Naber"
+    res=res
+    println(res)
   }
 
 }

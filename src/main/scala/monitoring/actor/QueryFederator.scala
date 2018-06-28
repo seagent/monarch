@@ -32,8 +32,8 @@ class QueryFederator extends Actor with ActorLogging {
   private var resultMap: HashMap[FederateQuery, Result] = HashMap.empty
 
   override def receive: Receive = {
-    case FederateQuery(query) =>
-      //log.info("Hash Code for Federate Query: [{}], and Query Value: [{}]", fq.hashCode, query)
+    case fq@FederateQuery(query) =>
+      log.info("Hash Code for Federate Query: [{}], and Query Value: [{}]", fq.hashCode, query)
       val subQueryFederatorRegion = ClusterSharding.get(context.system).shardRegion("SubQueryFederator")
       val directedQueries = QueryManager.splitFederatedQuery(query, new util.ArrayList[Union])
       expectedCount = directedQueries.size - 1
