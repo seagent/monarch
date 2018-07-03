@@ -28,6 +28,7 @@ class MonitoringSerializer extends Serializer {
       case db: DistributeBuckets => Json.toBytes(Json.toJsObject(db))
       case res: Result => Json.toBytes(Json.toJsObject(res))
       case phj: PerformHashJoin => Json.toBytes(Json.toJsObject(phj))
+      case rc: ResultChange => Json.toBytes(Json.toJsObject(rc))
       case _ => Array[Byte]()
     }
 
@@ -45,6 +46,7 @@ class MonitoringSerializer extends Serializer {
       case "DistributeBuckets" => Json.parse(bytes).as[DistributeBuckets]
       case "Result" => Json.parse(bytes).as[Result]
       case "PerformHashJoin" => Json.parse(bytes).as[PerformHashJoin]
+      case "ResultChange" => Json.parse(bytes).as[ResultChange]
       case _ => None
     }
   }

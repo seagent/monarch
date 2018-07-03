@@ -5,9 +5,11 @@ import java.io.ByteArrayOutputStream
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.sharding.ShardRegion
 import com.hp.hpl.jena.query.{QueryExecutionFactory, ResultSetFormatter}
-import monitoring.message.{ExecuteSubQuery, Result}
+import monitoring.message.{ExecuteSubQuery, Result, ResultChange}
 
-import scala.collection.immutable.HashMap
+import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
 object SubQueryExecutor {
   val extractEntityId: ShardRegion.ExtractEntityId = {
@@ -23,8 +25,7 @@ object SubQueryExecutor {
 
 class SubQueryExecutor extends Actor with ActorLogging {
 
-  private var resultMap: HashMap[ExecuteSubQuery, Result] = HashMap.empty
-  private var registeryList: Vector[ActorRef] = Vector.empty
+  private var register: Vector[ActorRef] = Vector.empty
   private var queryResult: Option[Result] = None
 
   override def receive: Receive = {
@@ -32,34 +33,44 @@ class SubQueryExecutor extends Actor with ActorLogging {
       log.info("Hash Code for Execute Sub Query: [{}], and Query Value: [{}], Endpoint Value: [{}]", esq.hashCode, query, endpoint)
       registerSender
       val result = executeQuery(query, endpoint)
-      resultMap += (esq -> result)
+
+      if (queryResult.isEmpty) {
+        queryResult = Some(result)
+        notifyRegisteryList(result)
+        context.system.scheduler.schedule(0.seconds, 20.seconds, self, esq)
+      }
+
       if (queryResult.isEmpty || queryResult.getOrElse() != result) {
         queryResult = Some(result)
-        notifyRegisteryList()
+        notifyRegisteryList(ResultChange(result))
       }
+      else {
+        println(s"Hashcode: '${esq.hashCode()}' full and same")
+      }
+
   }
 
-  private def notifyRegisteryList() = {
-    registeryList foreach {
+  private def notifyRegisteryList(message: Any) = {
+    register foreach {
       registered => {
-        registered ! queryResult.getOrElse()
+        registered ! message
       }
     }
   }
 
   private def executeQuery(query: String, endpoint: String) = {
     val execution = QueryExecutionFactory.sparqlService(endpoint, query)
-    val results = execution.execSelect()
+    val results = execution.execSelect
     val outputStream = new ByteArrayOutputStream
     ResultSetFormatter.outputAsJSON(outputStream, results)
     val json = new String(outputStream.toByteArray)
     execution.close
-    Result(json)
+    Result(json, results.getResultVars.asScala)
   }
 
   private def registerSender = {
-    if (!registeryList.contains(sender) && sender != self) {
-      registeryList = registeryList :+ sender
+    if (!register.contains(sender) && sender != self) {
+      register = register :+ sender
     }
   }
 

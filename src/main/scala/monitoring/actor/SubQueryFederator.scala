@@ -7,7 +7,7 @@ import akka.cluster.sharding.{ClusterSharding, ShardRegion}
 import com.hp.hpl.jena.query.{ResultSetFactory, ResultSetFormatter}
 import com.hp.hpl.jena.sparql.engine.binding.Binding
 import main.QueryIterCollection
-import monitoring.message.{ExecuteSubQuery, FederateSubQuery, Result}
+import monitoring.message.{ExecuteSubQuery, FederateSubQuery, Result, ResultChange}
 
 import scala.collection.JavaConverters._
 import scala.collection.immutable.HashMap
@@ -27,10 +27,10 @@ object SubQueryFederator {
 
 class SubQueryFederator extends Actor with ActorLogging {
 
-  private var resultMap: HashMap[FederateSubQuery, Result] = HashMap.empty
   private var registeryList: Vector[ActorRef] = Vector.empty
   private var resultCount = 0
-  private var bindingList: Vector[Binding] = Vector.empty
+  private var resultMap: HashMap[Int, Result] = HashMap.empty
+  private var queryResult: Option[Result] = None
 
   override def receive: Receive = {
     case fsq@FederateSubQuery(query, endpoints) =>
@@ -38,17 +38,33 @@ class SubQueryFederator extends Actor with ActorLogging {
       distribute(query, endpoints)
       registerSender
       resultCount = endpoints.size
-    case result@Result(_) =>
+    case result@Result(_, _) =>
       resultCount -= 1
-      val resultSet = result.toResultSet()
-      while (resultSet.hasNext)
-        bindingList = bindingList :+ resultSet.nextBinding
+      resultMap += (result.hashCode -> result)
       if (resultCount == 0) {
-        val finalResultSet = ResultSetFactory.create(new QueryIterCollection(bindingList.asJava), resultSet.getResultVars)
-        val outputStream = new ByteArrayOutputStream
-        ResultSetFormatter.outputAsJSON(outputStream, finalResultSet)
-        notifyRegisteryList(new Result(new String(outputStream.toByteArray)))
+        notifyRegisteryList(constructResult)
       }
+    case rc@ResultChange(_) =>
+      resultMap += (rc.result.hashCode() -> rc.result)
+      notifyRegisteryList(constructResult)
+  }
+
+  private def constructResult = {
+    val finalResultSet = ResultSetFactory.create(new QueryIterCollection(generateBindings.asJava), resultMap.values.head.resultVars.asJava)
+    val outputStream = new ByteArrayOutputStream
+    ResultSetFormatter.outputAsJSON(outputStream, finalResultSet)
+    val finalResult = Result(new String(outputStream.toByteArray), finalResultSet.getResultVars.asScala)
+    finalResult
+  }
+
+  private def generateBindings = {
+    var bindingList: Vector[Binding] = Vector.empty
+    for ((_, v) <- resultMap) {
+      val rs = v.toResultSet
+      while (rs.hasNext)
+        bindingList = bindingList :+ rs.nextBinding
+    }
+    bindingList
   }
 
   private def distribute(query: String, endpoints: Seq[String]) = {

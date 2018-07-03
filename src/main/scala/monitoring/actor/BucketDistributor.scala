@@ -41,7 +41,7 @@ class BucketDistributor extends Actor with ActorLogging {
     case DistributeBuckets(firstRes, secondRes) =>
       distributeBuckets(firstRes, secondRes)
 
-    case result@Result(_) =>
+    case result@Result(_,_) =>
       handleJoinResult(result)
 
   }
@@ -90,7 +90,7 @@ class BucketDistributor extends Actor with ActorLogging {
   private def generateResult(vars: mutable.Buffer[String], bucket: Vector[Binding]): Result = {
     val outputStream = new ByteArrayOutputStream
     ResultSetFormatter.outputAsJSON(outputStream, ResultSetFactory.create(new QueryIterCollection(bucket.asJava), vars.asJava))
-    Result(new String(outputStream.toByteArray))
+    Result(new String(outputStream.toByteArray),vars)
   }
 
   def findCommonVars(varsFirst: mutable.Buffer[String], varsSecond: mutable.Buffer[String]): Vector[String] = {

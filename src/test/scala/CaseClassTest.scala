@@ -1,9 +1,10 @@
+import java.util.stream.Collectors
+
 import com.hp.hpl.jena.sparql.engine.binding.Binding
 import monitoring.message.{ExecuteSubQuery, FederateSubQuery, Result}
 import org.scalatest._
 
-import scala.collection.mutable.HashMap
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, HashMap, ListBuffer}
 
 class CaseClassTest extends FlatSpec with Matchers {
 
@@ -25,15 +26,28 @@ class CaseClassTest extends FlatSpec with Matchers {
     val vector = bucketMap.getOrElse(3, ArrayBuffer.empty[String])
     vector += "naber"
     bucketMap += (3 -> vector)
-    println(bucketMap.getOrElse(4,update))
+    println(bucketMap.getOrElse(4, update))
 
-    var res = new Result("")
+    var res = new Result("", Vector.empty)
     res.resultJSON :+ "Naber"
-    res=res
+    res = res
     println(res)
 
     var result = None: Option[Result]
+
+
+    var someList = new ListBuffer[String]()
+    someList += "apple"
+    someList += "orange"
+    someList += "pear"
+    val filtered = someList.filter(_.endsWith("e"))
+    someList += "strawberry"
+    println(filtered)
+    val modified = someList.filter(_.contains("ea")).map(_ + "x")
+    println(modified)
+
   }
-  def update{}
+
+  def update {}
 
 }
