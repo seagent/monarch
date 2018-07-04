@@ -40,7 +40,7 @@ class SubQueryExecutor extends Actor with ActorLogging {
         context.system.scheduler.schedule(0.seconds, 20.seconds, self, esq)
       }
 
-      if (queryResult.isEmpty || queryResult.getOrElse() != result) {
+      if (queryResult.isEmpty || !queryResult.contains(result)) {
         queryResult = Some(result)
         notifyRegisteryList(ResultChange(result))
       }

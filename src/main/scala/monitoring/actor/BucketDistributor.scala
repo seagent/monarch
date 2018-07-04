@@ -41,14 +41,14 @@ class BucketDistributor extends Actor with ActorLogging {
     case DistributeBuckets(firstRes, secondRes) =>
       distributeBuckets(firstRes, secondRes)
 
-    case result@Result(_,_) =>
+    case result@Result(_, _) =>
       handleJoinResult(result)
 
   }
 
   private def handleJoinResult(result: Result) = {
     bucketCount -= 1
-    val resultSet = result.toResultSet()
+    val resultSet = result.toResultSet
     insertResult(resultSet)
     // if join has completed notify join result
     if (bucketCount == 0) {
@@ -63,37 +63,33 @@ class BucketDistributor extends Actor with ActorLogging {
 
     registerSender
 
-    // convert results to result sets
-    val rsFirst = firstRes.toResultSet()
-    val rsSecond = secondRes.toResultSet()
-
     // find common vars between result sets
-    val commonVars = findCommonVars(rsFirst.getResultVars.asScala, rsSecond.getResultVars.asScala)
+    val commonVars = findCommonVars(firstRes.resultVars, secondRes.resultVars)
 
     // get bucket iterators
-    val bucketIterFirst = generateBucketMap(rsFirst, commonVars).values.iterator
-    val bucketIterSecond = generateBucketMap(rsSecond, commonVars).values.iterator
+    val bucketIterFirst = generateBucketMap(firstRes.toResultSet, commonVars).values.iterator
+    val bucketIterSecond = generateBucketMap(secondRes.toResultSet, commonVars).values.iterator
 
     // iterate over bucket iterators and perform hash join
     while (bucketIterFirst.hasNext && bucketIterSecond.hasNext) {
-      performHashJoin(hashJoinRegion, rsFirst.getResultVars.asScala, rsSecond.getResultVars.asScala, bucketIterFirst, bucketIterSecond)
+      performHashJoin(hashJoinRegion, firstRes.resultVars, secondRes.resultVars, bucketIterFirst, bucketIterSecond)
     }
   }
 
-  def performHashJoin(hashJoinRegion: ActorRef, varsFirst: mutable.Buffer[String], varsSecond: mutable.Buffer[String], bucketIterFirst: Iterator[Vector[Binding]], bucketIterSecond: Iterator[Vector[Binding]]): Unit = {
+  def performHashJoin(hashJoinRegion: ActorRef, varsFirst: Seq[String], varsSecond: Seq[String], bucketIterFirst: Iterator[Vector[Binding]], bucketIterSecond: Iterator[Vector[Binding]]): Unit = {
     bucketCount += 1
     val resultFirst = generateResult(varsFirst, bucketIterFirst.next)
     val resultSecond = generateResult(varsSecond, bucketIterSecond.next)
     hashJoinRegion ! PerformHashJoin(resultFirst, resultSecond)
   }
 
-  private def generateResult(vars: mutable.Buffer[String], bucket: Vector[Binding]): Result = {
+  private def generateResult(vars: Seq[String], bucket: Vector[Binding]): Result = {
     val outputStream = new ByteArrayOutputStream
     ResultSetFormatter.outputAsJSON(outputStream, ResultSetFactory.create(new QueryIterCollection(bucket.asJava), vars.asJava))
-    Result(new String(outputStream.toByteArray),vars)
+    Result(new String(outputStream.toByteArray), vars)
   }
 
-  def findCommonVars(varsFirst: mutable.Buffer[String], varsSecond: mutable.Buffer[String]): Vector[String] = {
+  def findCommonVars(varsFirst: Seq[String], varsSecond: Seq[String]): Vector[String] = {
     var commonVars: Vector[String] = Vector.empty
     varsFirst foreach {
       variable => {

@@ -29,7 +29,8 @@ class QueryFederator extends Actor with ActorLogging {
   private var resultCount = 0
   private var results: Vector[Result] = Vector.empty
   private var registeryList: Vector[ActorRef] = Vector.empty
-  private var resultMap: HashMap[FederateQuery, Result] = HashMap.empty
+  private var resultMap: HashMap[Int, Result] = HashMap.empty
+  private var queryResult: Option[Result] = None
 
   override def receive: Receive = {
     case fq@FederateQuery(query) =>
@@ -39,16 +40,15 @@ class QueryFederator extends Actor with ActorLogging {
       resultCount = directedQueries.size - 1
       distribute(subQueryFederatorRegion, directedQueries)
       registerSender
-    case receivedResult@Result(_,_) =>
-      val receivedRs = receivedResult.toResultSet()
+    case receivedResult@Result(_, _) =>
+      resultMap += (receivedResult.hashCode() -> receivedResult)
       // get hash join performer region
       val bucketDistributorRegion = ClusterSharding.get(context.system).shardRegion("BucketDistributor")
       var matched = false
       breakable {
         results foreach {
           result => {
-            val innerRs = result.toResultSet()
-            if (QueryManager.matchAnyVar(receivedRs.getResultVars, innerRs.getResultVars)) {
+            if (QueryManager.matchAnyVar(receivedResult.resultVars.asJava, result.resultVars.asJava)) {
               results = results.filterNot(res => res == result)
               bucketDistributorRegion ! DistributeBuckets(receivedResult, result)
               resultCount -= 1
@@ -62,8 +62,27 @@ class QueryFederator extends Actor with ActorLogging {
         results = results :+ receivedResult
 
       // if query completed print result
-      if (resultCount == 0 && results.size == 1)
-        ResultSetFormatter.out(receivedRs)
+      if (resultCount == 0 && results.size == 1) {
+        queryResult = Some(receivedResult)
+        ResultSetFormatter.out(receivedResult.toResultSet)
+      }
+    case rc@ResultChange(_) =>
+      resultCount = resultMap.size - 1
+      resultMap += (rc.result.hashCode() -> rc.result)
+      results=resultMap.values.toVector
+      val bucketDistributorRegion = ClusterSharding.get(context.system).shardRegion("BucketDistributor")
+      breakable {
+        results foreach {
+          result => {
+            if (QueryManager.matchAnyVar(rc.result.resultVars.asJava, result.resultVars.asJava)) {
+              results = results.filterNot(res => res == result)
+              bucketDistributorRegion ! DistributeBuckets(rc.result, result)
+              resultCount -= 1
+              break
+            }
+          }
+        }
+      }
 
   }
 
@@ -83,9 +102,10 @@ class QueryFederator extends Actor with ActorLogging {
 
   private def notifyRegisteryList(result: Result) = {
     registeryList foreach {
-      parent => {
-        parent ! result
+      registered => {
+        registered ! result
       }
     }
   }
+
 }

@@ -25,7 +25,7 @@ object HashJoinPerformer {
 class HashJoinPerformer extends Actor with ActorLogging {
   override def receive: Receive = {
     case PerformHashJoin(firstRs, secondRs) =>
-      val resultSet = new ResultSetMerger().mergeResultSets(firstRs.toResultSet(), secondRs.toResultSet())
+      val resultSet = new ResultSetMerger().mergeResultSets(firstRs.toResultSet, secondRs.toResultSet)
       //serialize result set
       val outputStream = new ByteArrayOutputStream
       ResultSetFormatter.outputAsJSON(outputStream, resultSet)

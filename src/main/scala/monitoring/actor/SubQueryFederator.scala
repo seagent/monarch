@@ -42,11 +42,16 @@ class SubQueryFederator extends Actor with ActorLogging {
       resultCount -= 1
       resultMap += (result.hashCode -> result)
       if (resultCount == 0) {
-        notifyRegisteryList(constructResult)
+        val finalRes = constructResult
+        queryResult = Some(finalRes)
+        notifyRegisteryList(finalRes)
       }
     case rc@ResultChange(_) =>
       resultMap += (rc.result.hashCode() -> rc.result)
-      notifyRegisteryList(constructResult)
+      val newRes = constructResult
+      if (!queryResult.contains(newRes))
+        notifyRegisteryList(ResultChange(newRes))
+      queryResult = Some(newRes)
   }
 
   private def constructResult = {
@@ -81,10 +86,10 @@ class SubQueryFederator extends Actor with ActorLogging {
     }
   }
 
-  private def notifyRegisteryList(result: Result) = {
+  private def notifyRegisteryList(msg: Any) = {
     registeryList foreach {
       registered => {
-        registered ! result
+        registered ! msg
       }
     }
   }
