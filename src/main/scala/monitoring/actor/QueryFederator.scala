@@ -64,7 +64,7 @@ class QueryFederator extends Actor with ActorLogging {
       // if query completed print result
       if (resultCount == 0 && results.size == 1) {
         queryResult = Some(receivedResult)
-        ResultSetFormatter.out(receivedResult.toResultSet)
+        notifyRegisteryList(receivedResult)
       }
     case rc@ResultChange(_) =>
       resultCount = resultMap.size - 1

@@ -41,11 +41,9 @@ class SubQueryExecutor extends Actor with ActorLogging {
       }
 
       if (queryResult.isEmpty || !queryResult.contains(result)) {
+        log.info("A change has been detected for the query [{}], and endpoint [{}]", query, endpoint)
         queryResult = Some(result)
         notifyRegisteryList(ResultChange(result))
-      }
-      else {
-        println(s"Hashcode: '${esq.hashCode()}' full and same")
       }
 
   }
