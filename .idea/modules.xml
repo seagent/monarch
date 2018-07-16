@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/querymonitor.iml" filepath="$PROJECT_DIR$/.idea/modules/querymonitor.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/querymonitor-build.iml" filepath="$PROJECT_DIR$/.idea/modules/querymonitor-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/monitoring-environment.iml" filepath="$PROJECT_DIR$/.idea/modules/monitoring-environment.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/monitoring-environment-build.iml" filepath="$PROJECT_DIR$/.idea/modules/monitoring-environment-build.iml" />
     </modules>
   </component>
 </project>

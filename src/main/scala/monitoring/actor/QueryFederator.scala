@@ -9,7 +9,7 @@ import main.{DirectedQuery, QueryManager, Union}
 import monitoring.message._
 
 import scala.collection.JavaConverters._
-import scala.collection.immutable.HashMap
+import scala.collection.immutable.{HashMap, Queue}
 import scala.util.control.Breaks._
 
 object QueryFederator {
@@ -31,6 +31,8 @@ class QueryFederator extends Actor with ActorLogging {
   private var registeryList: Vector[ActorRef] = Vector.empty
   private var resultMap: HashMap[Int, Result] = HashMap.empty
   private var queryResult: Option[Result] = None
+  private var isJoinCompleted: Boolean = false
+  private var resultChangeQueue: Queue[ResultChange] = Queue.empty
 
   override def receive: Receive = {
     case fq@FederateQuery(query) =>
@@ -65,23 +67,16 @@ class QueryFederator extends Actor with ActorLogging {
       if (resultCount == 0 && results.size == 1) {
         queryResult = Some(receivedResult)
         notifyRegisteryList(receivedResult)
+        isJoinCompleted = true
       }
     case rc@ResultChange(_) =>
-      resultCount = resultMap.size - 1
-      resultMap += (rc.result.hashCode() -> rc.result)
-      results=resultMap.values.toVector
-      val bucketDistributorRegion = ClusterSharding.get(context.system).shardRegion("BucketDistributor")
-      breakable {
-        results foreach {
-          result => {
-            if (QueryManager.matchAnyVar(rc.result.resultVars.asJava, result.resultVars.asJava)) {
-              results = results.filterNot(res => res == result)
-              bucketDistributorRegion ! DistributeBuckets(rc.result, result)
-              resultCount -= 1
-              break
-            }
-          }
-        }
+      resultChangeQueue = resultChangeQueue.enqueue(rc)
+      if (isJoinCompleted) {
+        val dequeueRc = resultChangeQueue.dequeue._1
+        resultCount = resultMap.size - 1
+        resultMap += (dequeueRc.result.hashCode() -> dequeueRc.result)
+        results = resultMap.values.toVector
+        self ! dequeueRc.result
       }
 
   }
