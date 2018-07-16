@@ -68,17 +68,24 @@ class QueryFederator extends Actor with ActorLogging {
         queryResult = Some(receivedResult)
         notifyRegisteryList(receivedResult)
         isJoinCompleted = true
+        applyChange
       }
     case rc@ResultChange(_) =>
       resultChangeQueue = resultChangeQueue.enqueue(rc)
       if (isJoinCompleted) {
-        val dequeueRc = resultChangeQueue.dequeue._1
-        resultCount = resultMap.size - 1
-        resultMap += (dequeueRc.result.hashCode() -> dequeueRc.result)
-        results = resultMap.values.toVector
-        self ! dequeueRc.result
+        applyChange
       }
+  }
 
+  private def applyChange = {
+    if (resultChangeQueue.nonEmpty) {
+      isJoinCompleted = false
+      val dequeueRc = resultChangeQueue.dequeue._1
+      resultCount = resultMap.size - 1
+      resultMap += (dequeueRc.result.hashCode() -> dequeueRc.result)
+      results = resultMap.values.toVector
+      self ! dequeueRc.result
+    }
   }
 
   private def distribute(subQueryFederatorRegion: ActorRef, directedQueries: util.List[DirectedQuery]) = {
