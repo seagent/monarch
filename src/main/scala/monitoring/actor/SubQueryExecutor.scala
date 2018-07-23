@@ -1,13 +1,11 @@
 package monitoring.actor
 
-import java.io.ByteArrayOutputStream
-
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.sharding.ShardRegion
-import com.hp.hpl.jena.query.{QueryExecutionFactory, ResultSetFormatter}
+import com.hp.hpl.jena.query.QueryExecutionFactory
+import monitoring.main.MonitoringUtils
 import monitoring.message.{ExecuteSubQuery, Result, ResultChange}
 
-import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
@@ -37,7 +35,7 @@ class SubQueryExecutor extends Actor with ActorLogging {
       if (queryResult.isEmpty) {
         queryResult = Some(result)
         notifyRegisteryList(result)
-        context.system.scheduler.schedule(0.seconds, 20.seconds, self, esq)
+        //context.system.scheduler.schedule(0.seconds, 20.seconds, self, esq)
       }
 
       if (queryResult.isEmpty || !queryResult.contains(result)) {
@@ -58,13 +56,11 @@ class SubQueryExecutor extends Actor with ActorLogging {
 
   private def executeQuery(query: String, endpoint: String) = {
     val execution = QueryExecutionFactory.sparqlService(endpoint, query)
-    val results = execution.execSelect
-    val outputStream = new ByteArrayOutputStream
-    ResultSetFormatter.outputAsJSON(outputStream, results)
-    val json = new String(outputStream.toByteArray)
-    execution.close
-    Result(json, results.getResultVars.asScala)
+    val result = MonitoringUtils.convertRdfToResult(execution.execSelect())
+    execution.close()
+    result
   }
+
 
   private def registerSender = {
     if (!register.contains(sender) && sender != self) {
