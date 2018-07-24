@@ -1,9 +1,7 @@
+import actor.MockSubQueryExecutor
 import akka.actor.{ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
-import com.hp.hpl.jena.query.QueryExecutionFactory
-import monitoring.actor.SubQueryExecutor
-import monitoring.main.MonitoringUtils
-import monitoring.message.{ExecuteSubQuery, ResultChange}
+import monitoring.message.{ExecuteSubQuery, Result}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 class SubQueryExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) with ImplicitSender
@@ -13,19 +11,13 @@ class SubQueryExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) 
     TestKit.shutdownActorSystem(system)
   }
 
-  private val query = "select * where {?movie <http://dbpedia.org/ontology/director> <http://dbpedia.org/resource/Steven_Spielberg>. ?movie <http://xmlns.com/foaf/0.1/name> ?name}"
-
-  private val endpoint = "http://dbpedia.org/sparql"
-
+// In order to handle result change, some query result should be stored locally and changed some data in it.
   "An Executor actor" must {
 
     "execute query and return result to its register list" in {
-      val sqe = system.actorOf(Props(new SubQueryExecutor))
-      sqe ! ExecuteSubQuery(query, endpoint)
-
-      val exec = QueryExecutionFactory.sparqlService(endpoint, query)
-      val result = MonitoringUtils.convertRdfToResult(exec.execSelect())
-      expectMsg(result)
+      val sqe = system.actorOf(Props(new MockSubQueryExecutor))
+      sqe ! ExecuteSubQuery("", "")
+      expectMsg(Result("",Vector.empty[String]))
     }
 
   }

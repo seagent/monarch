@@ -54,7 +54,7 @@ class SubQueryExecutor extends Actor with ActorLogging {
     }
   }
 
-  private def executeQuery(query: String, endpoint: String) = {
+  protected def executeQuery(query: String, endpoint: String) = {
     val execution = QueryExecutionFactory.sparqlService(endpoint, query)
     val result = MonitoringUtils.convertRdfToResult(execution.execSelect())
     execution.close()
