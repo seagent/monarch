@@ -2,16 +2,21 @@ package monitoring.main
 
 import java.io.ByteArrayOutputStream
 
-import com.hp.hpl.jena.query.{QueryExecution, ResultSet, ResultSetFormatter}
+import com.hp.hpl.jena.query.{ResultSet, ResultSetFormatter}
 import monitoring.message.Result
+import play.api.libs.json.Json
 
 import scala.collection.JavaConverters._
 
 object MonitoringUtils {
-  def convertRdfToResult(rdfResult: ResultSet) = {
+  def convertRdf2Result(rdfResult: ResultSet) = {
+    val json: String = convertRdf2Json(rdfResult)
+    Result(json, rdfResult.getResultVars.asScala)
+  }
+
+  def convertRdf2Json(rdfResult: ResultSet) = {
     val outputStream = new ByteArrayOutputStream
     ResultSetFormatter.outputAsJSON(outputStream, rdfResult)
-    val json = new String(outputStream.toByteArray)
-    Result(json, rdfResult.getResultVars.asScala)
+    Json.parse(new String(outputStream.toByteArray)).toString
   }
 }
