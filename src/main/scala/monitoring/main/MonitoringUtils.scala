@@ -17,6 +17,6 @@ object MonitoringUtils {
   def convertRdf2Json(rdfResult: ResultSet) = {
     val outputStream = new ByteArrayOutputStream
     ResultSetFormatter.outputAsJSON(outputStream, rdfResult)
-    Json.parse(new String(outputStream.toByteArray)).toString
+    new String(outputStream.toByteArray)
   }
 }

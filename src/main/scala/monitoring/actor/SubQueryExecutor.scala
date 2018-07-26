@@ -1,6 +1,6 @@
 package monitoring.actor
 
-import akka.actor.{Actor, ActorLogging, ActorRef}
+import akka.actor.{Actor, ActorLogging, ActorRef,ActorContext}
 import akka.cluster.sharding.ShardRegion
 import com.hp.hpl.jena.query.QueryExecutionFactory
 import monitoring.main.MonitoringUtils
@@ -8,6 +8,8 @@ import monitoring.message.{ExecuteSubQuery, Result, ResultChange}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import scala.concurrent._
+import ExecutionContext.Implicits.global
 
 object SubQueryExecutor {
   val extractEntityId: ShardRegion.ExtractEntityId = {
@@ -35,15 +37,21 @@ class SubQueryExecutor extends Actor with ActorLogging {
       if (queryResult.isEmpty) {
         queryResult = Some(result)
         notifyRegisteryList(result)
-        //context.system.scheduler.schedule(0.seconds, 20.seconds, self, esq)
+        schedule(esq)
       }
-
-      if (queryResult.isEmpty || !queryResult.contains(result)) {
+      else if (!queryResult.contains(result)) {
         log.info("A change has been detected for the query [{}], and endpoint [{}]", query, endpoint)
         queryResult = Some(result)
         notifyRegisteryList(ResultChange(result))
+      } else {
+        // TODO: Need to handle here as return cached and unchanged result
+        // notifyRegisteryList(result)
       }
 
+  }
+
+  protected def schedule(esq: ExecuteSubQuery) = {
+    context.system.scheduler.schedule(0.seconds, 20.seconds, self, esq)
   }
 
   private def notifyRegisteryList(message: Any) = {
