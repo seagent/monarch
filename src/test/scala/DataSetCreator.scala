@@ -20,41 +20,33 @@ object DataSetCreator {
 
   def main(args: Array[String]): Unit = {
 
-    //createResultSetFile
+    createResultSetFile
 
-    //createModelFile
+    createModelFile
 
-    val res = ResultSetFactory.load(DataSetCreator.ACTUAL_RESULT_FILE_NAME, ResultsFormat.FMT_RS_JSON)
+    //val jsResult= changeResultFile(DataSetCreator.ACTUAL_RESULT_FILE_NAME)
+    //println(jsResult)
+  }
+
+  def changeResultFile(filePathToChange: String): String = {
+    val res = ResultSetFactory.load(filePathToChange, ResultsFormat.FMT_RS_JSON)
     val jsonText = MonitoringUtils.convertRdf2Json(res)
     val jsonValue = Json.parse(jsonText)
     val movieToRemove =
       Json.parse(
         """
-    {"movie":{"type":"uri","value":"http://dbpedia.org/resource/Indiana_Jones_and_the_Last_Crusade"},"name":{"type":"literal","xml:lang":"en","value":"Indiana Jones and the Last Crusade"}}
-      """)
+          |{
+          |"movie":{"type":"uri","value":"http://dbpedia.org/resource/Indiana_Jones_and_the_Last_Crusade"},
+          |"name":{"type":"literal","xml:lang":"en","value":"Indiana Jones and the Last Crusade"}
+          |}
+        """.stripMargin)
     val jsObject = jsonValue.as[JsObject]
-    println(jsObject)
-    val movieArray = (jsObject \ "results" \ "bindings").as[JsArray].value.filterNot(movie => movie == movieToRemove)
-    println(movieArray)
-    //val transformer = (__ \ "results" \ "bindings").json.update(__.read(jsObject).filterNot(movie => movie == movieToRemove.as[JsObject]))
-
 
     val jsonTransformer = (__ \ "results" \ "bindings").json.update(
-      of[JsArray].map{ case JsArray(arr) => JsArray(arr.filterNot(movie => movie == Json.obj("movie" -> Json.obj("type" -> "uri", "value" -> "http://dbpedia.org/resource/Indiana_Jones_and_the_Last_Crusade"), "name" -> Json.obj("type" -> "literal", "xml:lang" -> "en", "value" -> "Indiana Jones and the Last Crusade")))) }
+      of[JsArray].map { case JsArray(arr) => JsArray(arr.filterNot(movie => movie == movieToRemove)) }
     )
-    //filterNot(movie => movie == Json.obj("movie" -> Json.obj("type" -> "uri", "value" -> "http://dbpedia.org/resource/Indiana_Jones_and_the_Last_Crusade"), "name" -> Json.obj("type" -> "literal", "xml:lang" -> "en", "value" -> "Indiana Jones and the Last Crusade")))
 
-    val transformer = (__ \ "results" \ "bindings").json.put(JsArray.apply(movieArray))
-    val jsResult = jsObject.transform(jsonTransformer).asOpt.getOrElse()
-
-    println(jsResult)
-
-    /*val exampleObject = Json.parse("""{"movie":"jurassic park","director":"steven spielberg","country":{"name":"usa","population":"250M"}}""")
-    val transformer = (__).json.update(
-      __.read[JsObject].map(movie => movie ++ Json.obj("music" -> "thriller"))
-    )
-    val exampleResult = exampleObject.transform(transformer)
-    println(exampleResult)*/
+    jsObject.transform(jsonTransformer).asOpt.getOrElse().toString
   }
 
   private def createModelFile = {
