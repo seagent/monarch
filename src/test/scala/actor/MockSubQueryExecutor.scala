@@ -18,6 +18,6 @@ class MockSubQueryExecutor extends SubQueryExecutor {
   }
 
   override protected def schedule(esq: ExecuteSubQuery): Cancellable = {
-    context.system.scheduler.schedule(0.seconds, 5.seconds, self, esq)
+    context.system.scheduler.schedule(5.seconds, 5.seconds, self, esq)
   }
 }

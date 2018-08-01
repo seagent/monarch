@@ -2,8 +2,8 @@ import java.io.{File, PrintWriter}
 
 import DataSetCreator.RESULT_FILE_NAME
 import actor.MockSubQueryExecutor
-import akka.actor.{ActorSystem, Props}
-import akka.testkit.{ImplicitSender, TestKit}
+import akka.actor.{ActorSystem, PoisonPill, Props}
+import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import com.hp.hpl.jena.query.ResultSetFactory
 import com.hp.hpl.jena.sparql.resultset.ResultsFormat
 import monitoring.main.MonitoringUtils
@@ -21,12 +21,15 @@ class SubQueryExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) 
 
   "An Executor actor" must {
 
+    val probe = TestProbe()
+
     // arrange the result file as expected
     cleanUpResultFile
 
     "execute query and return result to its register list" in {
       // create a new actor
       val sqe = system.actorOf(Props(new MockSubQueryExecutor))
+      probe watch sqe
       // send execute sub query message
       sqe ! ExecuteSubQuery(DataSetCreator.DBPEDIA_DIRECTOR_SELECT_QUERY, DataSetCreator.RESULT_FILE_NAME)
 
@@ -35,13 +38,16 @@ class SubQueryExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) 
       val expectedResult = MonitoringUtils.convertRdf2Result(rsExp)
       // check if received message is the expected one
       expectMsg(expectedResult)
-      // tear down actor system
-      system.stop(sqe)
+      // kill actor instance
+      sqe ! PoisonPill
+      probe.expectTerminated(sqe)
     }
 
   }
 
   "An Executor actor" must {
+
+    val probe = TestProbe()
 
     // arrange the result file as expected
     cleanUpResultFile
@@ -52,9 +58,10 @@ class SubQueryExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) 
     "notify a change to its register list" in {
       // create a sub query executor actor
       val sqe = system.actorOf(Props(new MockSubQueryExecutor))
+      probe watch sqe
       // send an execute sub query message
       sqe ! ExecuteSubQuery(DataSetCreator.DBPEDIA_DIRECTOR_SELECT_QUERY, DataSetCreator.RESULT_FILE_NAME)
-      // first expect an Result message
+      // first expect a Result message
       val rsExp = ResultSetFactory.load(DataSetCreator.RESULT_FILE_NAME, ResultsFormat.FMT_RS_JSON)
       // assert expected message
       expectMsg(MonitoringUtils.convertRdf2Result(rsExp))
@@ -65,8 +72,39 @@ class SubQueryExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) 
       val resultChangeMsgExp = ResultChange(MonitoringUtils.convertRdf2Result(rsChanged))
       // check if received result is result change message
       expectMsg(10.seconds, resultChangeMsgExp)
-      // tear down the actor system
-      system.stop(sqe)
+      // kill actor instance
+      sqe ! PoisonPill
+      probe.expectTerminated(sqe)
+    }
+
+  }
+
+  "An Executor actor" must {
+
+    val probe = TestProbe()
+
+    // arrange the result file as expected
+    cleanUpResultFile
+
+    "return same result if it is not changed and not notify any change" in {
+      // create a new actor
+      val sqe = system.actorOf(Props(new MockSubQueryExecutor))
+      probe watch sqe
+      // send execute sub query message
+      sqe ! ExecuteSubQuery(DataSetCreator.DBPEDIA_DIRECTOR_SELECT_QUERY, DataSetCreator.RESULT_FILE_NAME)
+
+      //create expected message instance
+      val rsExp = ResultSetFactory.load(DataSetCreator.RESULT_FILE_NAME, ResultsFormat.FMT_RS_JSON)
+      val expectedResult = MonitoringUtils.convertRdf2Result(rsExp)
+      // check if received message is the expected one
+      expectMsg(expectedResult)
+      // send same query again
+      sqe ! ExecuteSubQuery(DataSetCreator.DBPEDIA_DIRECTOR_SELECT_QUERY, DataSetCreator.RESULT_FILE_NAME)
+      // expect same result
+      expectMsg(expectedResult)
+      // kill actor instance
+      sqe ! PoisonPill
+      probe.expectTerminated(sqe)
     }
 
   }

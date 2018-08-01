@@ -45,7 +45,7 @@ class SubQueryExecutor extends Actor with ActorLogging {
         notifyRegisteryList(ResultChange(result))
       } else {
         // TODO: Need to handle here as return the cached and unchanged result
-        // notifyRegisteryList(result)
+        notifyRegisteryList(result)
       }
 
   }
