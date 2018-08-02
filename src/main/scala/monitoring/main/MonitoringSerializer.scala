@@ -29,6 +29,7 @@ class MonitoringSerializer extends Serializer {
       case res: Result => Json.toBytes(Json.toJsObject(res))
       case phj: PerformHashJoin => Json.toBytes(Json.toJsObject(phj))
       case rc: ResultChange => Json.toBytes(Json.toJsObject(rc))
+      case sq: ScheduledQuery => Json.toBytes(Json.toJsObject(sq))
       case _ => Array[Byte]()
     }
 
@@ -47,6 +48,7 @@ class MonitoringSerializer extends Serializer {
       case "Result" => Json.parse(bytes).as[Result]
       case "PerformHashJoin" => Json.parse(bytes).as[PerformHashJoin]
       case "ResultChange" => Json.parse(bytes).as[ResultChange]
+      case "ScheduledQuery" => Json.parse(bytes).as[ScheduledQuery]
       case _ => None
     }
   }

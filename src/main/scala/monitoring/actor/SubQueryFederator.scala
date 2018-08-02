@@ -35,9 +35,13 @@ class SubQueryFederator extends Actor with ActorLogging {
   override def receive: Receive = {
     case fsq@FederateSubQuery(query, endpoints) =>
       log.info("Hash Code for Federate Sub Query: [{}], and Query Value: [{}], Endpoint Values: [{}]", fsq.hashCode, query, endpoints)
-      distribute(query, endpoints)
-      registerSender
-      resultCount = endpoints.size
+      if (queryResult.isDefined) {
+        notifyRegisteryList(queryResult.get)
+      } else {
+        distribute(query, endpoints)
+        registerSender
+        resultCount = endpoints.size
+      }
     case result@Result(_, _) =>
       resultCount -= 1
       resultMap += (result.hashCode -> result)

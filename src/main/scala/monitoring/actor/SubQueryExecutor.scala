@@ -1,15 +1,13 @@
 package monitoring.actor
 
-import akka.actor.{Actor, ActorLogging, ActorRef,ActorContext}
+import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.sharding.ShardRegion
 import com.hp.hpl.jena.query.QueryExecutionFactory
 import monitoring.main.MonitoringUtils
-import monitoring.message.{ExecuteSubQuery, Result, ResultChange}
+import monitoring.message.{ExecuteSubQuery, Result, ResultChange, ScheduledQuery}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import scala.concurrent._
-import ExecutionContext.Implicits.global
 
 object SubQueryExecutor {
   val extractEntityId: ShardRegion.ExtractEntityId = {
@@ -32,26 +30,29 @@ class SubQueryExecutor extends Actor with ActorLogging {
     case esq@ExecuteSubQuery(query, endpoint) =>
       log.info("Hash Code for Execute Sub Query: [{}], and Query Value: [{}], Endpoint Value: [{}]", esq.hashCode, query, endpoint)
       registerSender
-      val result = executeQuery(query, endpoint)
-
-      if (queryResult.isEmpty) {
+      if (queryResult.isDefined) {
+        sender ! queryResult.get
+      } else {
+        val result = executeQuery(query, endpoint)
         queryResult = Some(result)
-        notifyRegisteryList(result)
-        schedule(esq)
+        sender ! queryResult.get
+        schedule(ScheduledQuery(esq))
       }
-      else if (!queryResult.contains(result)) {
-        log.info("A change has been detected for the query [{}], and endpoint [{}]", query, endpoint)
+
+    case sq@ScheduledQuery(esq) =>
+      log.info("Hash Code for Scheduled Sub Query: [{}], and Scheduled Query Value: [{}]", sq.hashCode, esq)
+      val result = executeQuery(esq.query, esq.endpoint)
+      if (!queryResult.contains(result)) {
+        log.info("A change has been detected for the query [{}], and endpoint [{}]", esq.query, esq.endpoint)
         queryResult = Some(result)
         notifyRegisteryList(ResultChange(result))
       } else {
-        // TODO: Need to handle here as return the cached and unchanged result
-        notifyRegisteryList(result)
+        log.info("No change detected for the query [{}]", esq)
       }
-
   }
 
-  protected def schedule(esq: ExecuteSubQuery) = {
-    context.system.scheduler.schedule(0.seconds, 20.seconds, self, esq)
+  protected def schedule(sq: ScheduledQuery) = {
+    context.system.scheduler.schedule(0.seconds, 20.seconds, self, sq)
   }
 
   private def notifyRegisteryList(message: Any) = {

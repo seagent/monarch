@@ -1,0 +1,74 @@
+{
+  "head": {
+    "link": [],
+    "vars": [
+      "s"
+    ]
+  },
+  "results": {
+    "distinct": false,
+    "ordered": true,
+    "bindings": [
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://dbpedia.org/resource/A._C._Bhaktivedanta_Swami_Prabhupada"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://dbpedia.org/resource/Aaron_Burr"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://dbpedia.org/resource/Abbie_Hoffman"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://dbpedia.org/resource/Abraham_Robinson"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://dbpedia.org/resource/Abraham_de_Moivre"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://dbpedia.org/resource/Adalbert_of_Magdeburg"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://dbpedia.org/resource/Adam_Oehlenschl\u00E4ger"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://dbpedia.org/resource/Adam_Wi\u015Bniewski-Snerg"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://dbpedia.org/resource/Adi_Shamir"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://dbpedia.org/resource/Adlai_Stevenson_II"
+        }
+      }
+    ]
+  }
+}

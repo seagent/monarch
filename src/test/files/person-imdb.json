@@ -1,0 +1,71 @@
+{
+  "head": {
+    "vars": [
+      "s"
+    ]
+  },
+  "results": {
+    "bindings": [
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://data.linkedmdb.org/resource/editor/2304"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://data.linkedmdb.org/resource/editor/2305"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://data.linkedmdb.org/resource/editor/2306"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://data.linkedmdb.org/resource/editor/2307"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://data.linkedmdb.org/resource/editor/2308"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://data.linkedmdb.org/resource/editor/2309"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://data.linkedmdb.org/resource/editor/2310"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://data.linkedmdb.org/resource/editor/2311"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://data.linkedmdb.org/resource/editor/2312"
+        }
+      },
+      {
+        "s": {
+          "type": "uri",
+          "value": "http://data.linkedmdb.org/resource/editor/2313"
+        }
+      }
+    ]
+  }
+}
