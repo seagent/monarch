@@ -36,7 +36,7 @@ class SubQueryFederator extends Actor with ActorLogging {
     case fsq@FederateSubQuery(query, endpoints) =>
       log.info("Hash Code for Federate Sub Query: [{}], and Query Value: [{}], Endpoint Values: [{}]", fsq.hashCode, query, endpoints)
       if (queryResult.isDefined) {
-        notifyRegisteryList(queryResult.get)
+        sender ! queryResult.get
       } else {
         distribute(query, endpoints)
         registerSender
