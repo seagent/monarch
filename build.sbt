@@ -24,5 +24,7 @@ libraryDependencies ++= Seq(
   "io.kamon" % "sigar-loader" % "1.6.6-rev002",
   "org.apache.jena" % "jena-arq" % jenaVersion,
   "org.apache.jena" % "jena-core" % jenaVersion,
-  "com.typesafe.play" %% "play-json" % jsonVersion
+  "com.typesafe.play" %% "play-json" % jsonVersion,
+  "org.mockito" % "mockito-core" % "2.21.0" % Test
+
 )

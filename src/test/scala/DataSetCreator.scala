@@ -14,8 +14,11 @@ object DataSetCreator {
   val DBPEDIA_ENDPOINT = "http://dbpedia.org/sparql"
   val DBPEDIA_DIRECTOR_SELECT_QUERY = "select * where {?movie <http://dbpedia.org/ontology/director> <http://dbpedia.org/resource/Steven_Spielberg>. ?movie <http://xmlns.com/foaf/0.1/name> ?name}"
   val DBPEDIA_DIRECTOR_CONSTRUCT_QUERY = "construct {?movie <http://dbpedia.org/ontology/director> <http://dbpedia.org/resource/Steven_Spielberg>. ?movie <http://xmlns.com/foaf/0.1/name> ?name} where {?movie <http://dbpedia.org/ontology/director> <http://dbpedia.org/resource/Steven_Spielberg>. ?movie <http://xmlns.com/foaf/0.1/name> ?name}"
+  val PERSON_SELECT_QUERY = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX foaf: <http://xmlns.com/foaf/0.1/> select * where {?s rdf:type foaf:Person} OFFSET 10 LIMIT 10"
   val RESULT_FILE_NAME = "src/test/files/query-results.json"
   val ACTUAL_RESULT_FILE_NAME = "src/test/files/actual-results.json"
+  val DBPEDIA_RESULT_FILE_NAME = "src/test/files/person-dbpedia.json"
+  val IMDB_RESULT_FILE_NAME = "src/test/files/person-imdb.json"
   val RDF_FILE_NAME = "src/test/files/rdf-model.ttl"
 
   def main(args: Array[String]): Unit = {

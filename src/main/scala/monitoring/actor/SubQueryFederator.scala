@@ -76,7 +76,7 @@ class SubQueryFederator extends Actor with ActorLogging {
     bindingList
   }
 
-  private def distribute(query: String, endpoints: Seq[String]) = {
+  protected def distribute(query: String, endpoints: Seq[String]) = {
     endpoints foreach {
       endpoint =>
         val subQueryExecutorRegion = ClusterSharding.get(context.system).shardRegion("SubQueryExecutor")
