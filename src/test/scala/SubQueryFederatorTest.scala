@@ -13,7 +13,7 @@ import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import scala.collection.JavaConverters._
 
-class SubQueryFederatorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) with ImplicitSender
+class SubQueryFederatorTest extends TestKit(ActorSystem("SubQueryFederatorTest")) with ImplicitSender
   with WordSpecLike with Matchers with BeforeAndAfterAll with MockitoSugar {
 
   override def afterAll {
@@ -21,12 +21,9 @@ class SubQueryFederatorTest extends TestKit(ActorSystem("SubQueryExecutorTest"))
   }
 
   "A SubQueryFederator actor" must {
-    val probe = TestProbe()
-
-    // arrange the result file as expected
-    //cleanUpResultFile
 
     "federate a sub query and return result to its register list" in {
+      val probe = TestProbe()
       // create a new actor
       val sqf = system.actorOf(Props(new MockSubQueryFederator))
       probe watch sqf

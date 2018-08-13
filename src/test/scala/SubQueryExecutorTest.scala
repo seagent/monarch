@@ -21,12 +21,13 @@ class SubQueryExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) 
 
   "An Executor actor" must {
 
-    val probe = TestProbe()
-
-    // arrange the result file as expected
-    cleanUpResultFile
-
     "execute query and return result to its register list" in {
+
+      val probe = TestProbe()
+
+      // arrange the result file as expected
+      cleanUpResultFile
+
       // create a new actor
       val sqe = system.actorOf(Props(new MockSubQueryExecutor))
       probe watch sqe
@@ -43,19 +44,16 @@ class SubQueryExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) 
       probe.expectTerminated(sqe)
     }
 
-  }
-
-  "An Executor actor" must {
-
-    val probe = TestProbe()
-
-    // arrange the result file as expected
-    cleanUpResultFile
-
-    // create changed result file by modifying actual result
-    val changedJsonText = DataSetCreator.changeResultFile(DataSetCreator.ACTUAL_RESULT_FILE_NAME)
-
     "notify a change to its register list" in {
+
+      val probe = TestProbe()
+
+      // arrange the result file as expected
+      cleanUpResultFile
+
+      // create changed result file by modifying actual result
+      val changedJsonText = DataSetCreator.changeResultFile(DataSetCreator.ACTUAL_RESULT_FILE_NAME)
+
       // create a sub query executor actor
       val sqe = system.actorOf(Props(new MockSubQueryExecutor))
       probe watch sqe
@@ -77,16 +75,11 @@ class SubQueryExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) 
       probe.expectTerminated(sqe)
     }
 
-  }
-
-  "An Executor actor" must {
-
-    val probe = TestProbe()
-
-    // arrange the result file as expected
-    cleanUpResultFile
-
     "return same result if it is not changed and not notify any change" in {
+      val probe = TestProbe()
+
+      // arrange the result file as expected
+      cleanUpResultFile
       // create a new actor
       val sqe = system.actorOf(Props(new MockSubQueryExecutor))
       probe watch sqe
@@ -109,25 +102,26 @@ class SubQueryExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) 
 
   }
 
-  /**
-    * This method re-arranges the result file to its original
-    */
-  private def cleanUpResultFile = {
-    val res = ResultSetFactory.load(DataSetCreator.ACTUAL_RESULT_FILE_NAME, ResultsFormat.FMT_RS_JSON)
-    val jsonText = MonitoringUtils.convertRdf2Json(res)
-    //write original json text to file
-    write2File(jsonText, RESULT_FILE_NAME)
-  }
 
-  /**
-    * This method writes given @jsonText input to the location given in @filePath
-    *
-    * @param jsonText
-    * @param filePath
-    */
-  private def write2File(jsonText: String, filePath: String) = {
-    val pw = new PrintWriter(new File(filePath))
-    pw.write(jsonText)
-    pw.close()
-  }
+/**
+  * This method re-arranges the result file to its original
+  */
+private def cleanUpResultFile = {
+  val res = ResultSetFactory.load(DataSetCreator.ACTUAL_RESULT_FILE_NAME, ResultsFormat.FMT_RS_JSON)
+  val jsonText = MonitoringUtils.convertRdf2Json(res)
+  //write original json text to file
+  write2File(jsonText, RESULT_FILE_NAME)
+}
+
+/**
+  * This method writes given @jsonText input to the location given in @filePath
+  *
+  * @param jsonText
+  * @param filePath
+  */
+private def write2File(jsonText: String, filePath: String) = {
+  val pw = new PrintWriter(new File(filePath))
+  pw.write(jsonText)
+  pw.close()
+}
 }
