@@ -46,7 +46,7 @@ class QueryFederator extends Actor with ActorLogging {
         resultCount = directedQueries.size - 1
         distribute(subQueryFederatorRegion, directedQueries)
       }
-    case receivedResult@Result(_, _) =>
+    case receivedResult@Result(_, _,_) =>
       resultMap += (receivedResult.hashCode() -> receivedResult)
       // get hash join performer region
       val bucketDistributorRegion = ClusterSharding.get(context.system).shardRegion("BucketDistributor")

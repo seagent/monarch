@@ -18,7 +18,7 @@ class Agent extends Actor with ActorLogging {
       val client = context.actorOf(ClusterClient.props(
         ClusterClientSettings(context.system).withInitialContacts(initialContacts)), "client")
       client ! ClusterClient.Send("/system/sharding/QueryFederator", FederateQuery(register.query), localAffinity = true)
-    case result@Result(_, _) =>
+    case result@Result(_, _, _) =>
       ResultSetFormatter.out(result.toResultSet)
   }
 }

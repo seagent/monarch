@@ -9,8 +9,10 @@ import play.api.libs.json.Reads._
 
 import scala.collection.mutable.ArrayBuffer
 
-object DataSetCreator {
+object TestUtils {
 
+  val ACTUAL_DBPEDIA_RESULT_FILE_NAME = "src/test/files/person-dbpedia-actual.json"
+  val ACTUAL_IMDB_RESULT_FILE_NAME = "src/test/files/person-imdb-actual.json"
   val DBPEDIA_ENDPOINT = "http://dbpedia.org/sparql"
   val DBPEDIA_DIRECTOR_SELECT_QUERY = "select * where {?movie <http://dbpedia.org/ontology/director> <http://dbpedia.org/resource/Steven_Spielberg>. ?movie <http://xmlns.com/foaf/0.1/name> ?name}"
   val DBPEDIA_DIRECTOR_CONSTRUCT_QUERY = "construct {?movie <http://dbpedia.org/ontology/director> <http://dbpedia.org/resource/Steven_Spielberg>. ?movie <http://xmlns.com/foaf/0.1/name> ?name} where {?movie <http://dbpedia.org/ontology/director> <http://dbpedia.org/resource/Steven_Spielberg>. ?movie <http://xmlns.com/foaf/0.1/name> ?name}"
@@ -33,20 +35,11 @@ object DataSetCreator {
 
   def changeResultFile(filePathToChange: String): String = {
     val res = ResultSetFactory.load(filePathToChange, ResultsFormat.FMT_RS_JSON)
-    val jsonText = MonitoringUtils.convertRdf2Json(res)
-    val jsonValue = Json.parse(jsonText)
-    val movieToRemove =
-      Json.parse(
-        """
-          |{
-          |"movie":{"type":"uri","value":"http://dbpedia.org/resource/Indiana_Jones_and_the_Last_Crusade"},
-          |"name":{"type":"literal","xml:lang":"en","value":"Indiana Jones and the Last Crusade"}
-          |}
-        """.stripMargin)
+    val jsonValue = MonitoringUtils.convertRdf2Json(res)
     val jsObject = jsonValue.as[JsObject]
 
     val jsonTransformer = (__ \ "results" \ "bindings").json.update(
-      of[JsArray].map { case JsArray(arr) => JsArray(arr.filterNot(movie => movie == movieToRemove)) }
+      of[JsArray].map { case JsArray(arr) => JsArray(arr.drop(1)) }
     )
 
     jsObject.transform(jsonTransformer).asOpt.getOrElse().toString
@@ -68,7 +61,29 @@ object DataSetCreator {
 
     //write json text to file
     val pw = new PrintWriter(new File(RESULT_FILE_NAME))
-    pw.write(jsonRes)
+    pw.write(jsonRes.toString)
+    pw.close()
+  }
+
+  /**
+    * This method re-arranges the result file to its original
+    */
+  def cleanUpResultFile(originalFile: String, testFile: String) = {
+    val res = ResultSetFactory.load(originalFile, ResultsFormat.FMT_RS_JSON)
+    val jsonValue = MonitoringUtils.convertRdf2Json(res)
+    //write original json text to file
+    write2File(jsonValue.toString, testFile)
+  }
+
+  /**
+    * This method writes given @jsonText input to the location given in @filePath
+    *
+    * @param jsonText
+    * @param filePath
+    */
+  def write2File(jsonText: String, filePath: String) = {
+    val pw = new PrintWriter(new File(filePath))
+    pw.write(jsonText)
     pw.close()
   }
 }

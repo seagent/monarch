@@ -15,7 +15,8 @@ class MockSubQueryExecutor extends SubQueryExecutor {
 
   override protected def executeQuery(query: String, endpoint: String): Result = {
     val res = ResultSetFactory.load(endpoint, ResultsFormat.FMT_RS_JSON)
-    MonitoringUtils.convertRdf2Result(res)
+    val resultMock = MonitoringUtils.convertRdf2Result(res)
+    Result(resultMock.resultJSON, resultMock.resultVars, endpoint.hashCode)
   }
 
   override protected def schedule(sq: ScheduledQuery): Cancellable = {

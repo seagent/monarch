@@ -8,6 +8,7 @@ import com.hp.hpl.jena.query.{ResultSetFactory, ResultSetFormatter}
 import com.hp.hpl.jena.sparql.engine.binding.Binding
 import main.QueryIterCollection
 import monitoring.message.{ExecuteSubQuery, FederateSubQuery, Result, ResultChange}
+import play.api.libs.json.Json
 
 import scala.collection.JavaConverters._
 import scala.collection.immutable.HashMap
@@ -31,9 +32,11 @@ class SubQueryFederator extends Actor with ActorLogging {
   private var resultCount = 0
   private var resultMap: HashMap[Int, Result] = HashMap.empty
   private var queryResult: Option[Result] = None
+  private var federateSubQuery: Option[FederateSubQuery] = None
 
   override def receive: Receive = {
     case fsq@FederateSubQuery(query, endpoints) =>
+      federateSubQuery = Some(fsq)
       log.info("Hash Code for Federate Sub Query: [{}], and Query Value: [{}], Endpoint Values: [{}]", fsq.hashCode, query, endpoints)
       if (queryResult.isDefined) {
         sender ! queryResult.get
@@ -42,16 +45,16 @@ class SubQueryFederator extends Actor with ActorLogging {
         registerSender
         resultCount = endpoints.size
       }
-    case result@Result(_, _) =>
+    case result@Result(_, _, key) =>
       resultCount -= 1
-      resultMap += (result.hashCode -> result)
+      resultMap += (key -> result)
       if (resultCount == 0) {
         val finalRes = constructResult
         queryResult = Some(finalRes)
         notifyRegisteryList(finalRes)
       }
     case rc@ResultChange(_) =>
-      resultMap += (rc.result.hashCode() -> rc.result)
+      resultMap += (rc.result.key -> rc.result)
       val newRes = constructResult
       if (!queryResult.contains(newRes))
         notifyRegisteryList(ResultChange(newRes))
@@ -62,7 +65,7 @@ class SubQueryFederator extends Actor with ActorLogging {
     val finalResultSet = ResultSetFactory.create(new QueryIterCollection(generateBindings.asJava), resultMap.values.head.resultVars.asJava)
     val outputStream = new ByteArrayOutputStream
     ResultSetFormatter.outputAsJSON(outputStream, finalResultSet)
-    val finalResult = Result(new String(outputStream.toByteArray), finalResultSet.getResultVars.asScala)
+    val finalResult = Result(Json.parse(outputStream.toByteArray), finalResultSet.getResultVars.asScala, 1)
     finalResult
   }
 

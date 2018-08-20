@@ -10,13 +10,13 @@ import scala.collection.JavaConverters._
 
 object MonitoringUtils {
   def convertRdf2Result(rdfResult: ResultSet) = {
-    val json: String = convertRdf2Json(rdfResult)
-    Result(json, rdfResult.getResultVars.asScala)
+    val json = convertRdf2Json(rdfResult)
+    Result(json, rdfResult.getResultVars.asScala, 1)
   }
 
   def convertRdf2Json(rdfResult: ResultSet) = {
     val outputStream = new ByteArrayOutputStream
     ResultSetFormatter.outputAsJSON(outputStream, rdfResult)
-    new String(outputStream.toByteArray)
+    Json.parse(outputStream.toByteArray)
   }
 }

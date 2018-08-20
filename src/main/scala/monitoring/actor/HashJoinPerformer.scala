@@ -7,6 +7,7 @@ import akka.cluster.sharding.ShardRegion
 import com.hp.hpl.jena.query.ResultSetFormatter
 import main.ResultSetMerger
 import monitoring.message.{PerformHashJoin, Result}
+import play.api.libs.json.Json
 
 import scala.collection.JavaConverters._
 
@@ -30,6 +31,6 @@ class HashJoinPerformer extends Actor with ActorLogging {
       val outputStream = new ByteArrayOutputStream
       ResultSetFormatter.outputAsJSON(outputStream, resultSet)
       //send hash join result back to the sender
-      sender ! Result(new String(outputStream.toByteArray),resultSet.getResultVars().asScala)
+      sender ! Result(Json.parse(outputStream.toByteArray), resultSet.getResultVars.asScala, 1)
   }
 }

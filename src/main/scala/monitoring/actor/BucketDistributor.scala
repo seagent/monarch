@@ -9,6 +9,7 @@ import com.hp.hpl.jena.sparql.core.Var
 import com.hp.hpl.jena.sparql.engine.binding.Binding
 import main.QueryIterCollection
 import monitoring.message.{DistributeBuckets, PerformHashJoin, Result}
+import play.api.libs.json.Json
 import tr.edu.ege.seagent.boundarq.filterbound.MultipleNode
 
 import scala.collection.JavaConverters._
@@ -41,7 +42,7 @@ class BucketDistributor extends Actor with ActorLogging {
     case DistributeBuckets(firstRes, secondRes) =>
       distributeBuckets(firstRes, secondRes)
 
-    case result@Result(_, _) =>
+    case result@Result(_, _, _) =>
       handleJoinResult(result)
 
   }
@@ -86,7 +87,7 @@ class BucketDistributor extends Actor with ActorLogging {
   private def generateResult(vars: Seq[String], bucket: Vector[Binding]): Result = {
     val outputStream = new ByteArrayOutputStream
     ResultSetFormatter.outputAsJSON(outputStream, ResultSetFactory.create(new QueryIterCollection(bucket.asJava), vars.asJava))
-    Result(new String(outputStream.toByteArray), vars)
+    Result(Json.parse(outputStream.toByteArray), vars, 1)
   }
 
   def findCommonVars(varsFirst: Seq[String], varsSecond: Seq[String]): Vector[String] = {
