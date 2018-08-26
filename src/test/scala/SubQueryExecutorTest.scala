@@ -4,10 +4,10 @@ import TestUtils.RESULT_FILE_NAME
 import actor.MockSubQueryExecutor
 import akka.actor.{ActorSystem, PoisonPill, Props}
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
-import com.hp.hpl.jena.query.ResultSetFactory
+import com.hp.hpl.jena.query.{ResultSet, ResultSetFactory}
 import com.hp.hpl.jena.sparql.resultset.ResultsFormat
 import monitoring.main.MonitoringUtils
-import monitoring.message.{ExecuteSubQuery, ResultChange}
+import monitoring.message.{ExecuteSubQuery, Result, ResultChange}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
@@ -33,7 +33,7 @@ class SubQueryExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) 
 
       //create expected message instance
       val rsExp = ResultSetFactory.load(TestUtils.RESULT_FILE_NAME, ResultsFormat.FMT_RS_JSON)
-      val expectedResult = MonitoringUtils.convertRdf2Result(rsExp)
+      val expectedResult = createExpectedResult(rsExp, TestUtils.RESULT_FILE_NAME)
       // check if received message is the expected one
       expectMsg(expectedResult)
       // kill actor instance
@@ -58,12 +58,12 @@ class SubQueryExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) 
       // first expect a Result message
       val rsExp = ResultSetFactory.load(TestUtils.RESULT_FILE_NAME, ResultsFormat.FMT_RS_JSON)
       // assert expected message
-      expectMsg(MonitoringUtils.convertRdf2Result(rsExp))
+      expectMsg(createExpectedResult(rsExp, TestUtils.RESULT_FILE_NAME))
       // modify the registered result
       TestUtils.write2File(changedJsonText, RESULT_FILE_NAME)
       // create expected message instance
       val rsChanged = ResultSetFactory.load(TestUtils.RESULT_FILE_NAME, ResultsFormat.FMT_RS_JSON)
-      val resultChangeMsgExp = ResultChange(MonitoringUtils.convertRdf2Result(rsChanged))
+      val resultChangeMsgExp = ResultChange(createExpectedResult(rsChanged, TestUtils.RESULT_FILE_NAME))
       // check if received result is result change message
       expectMsg(10.seconds, resultChangeMsgExp)
       // kill actor instance
@@ -84,7 +84,7 @@ class SubQueryExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) 
 
       //create expected message instance
       val rsExp = ResultSetFactory.load(TestUtils.RESULT_FILE_NAME, ResultsFormat.FMT_RS_JSON)
-      val expectedResult = MonitoringUtils.convertRdf2Result(rsExp)
+      val expectedResult = createExpectedResult(rsExp, TestUtils.RESULT_FILE_NAME)
       // check if received message is the expected one
       expectMsg(expectedResult)
       // send same query again
@@ -98,4 +98,9 @@ class SubQueryExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) 
 
   }
 
+  private def createExpectedResult(rsExp: ResultSet, endpoint: String) = {
+    val result = MonitoringUtils.convertRdf2Result(rsExp)
+    val result2 = Result(result.resultJSON, result.resultVars, endpoint.hashCode)
+    result2
+  }
 }
