@@ -46,39 +46,43 @@ class QueryFederator extends Actor with ActorLogging {
         resultCount = directedQueries.size - 1
         distribute(subQueryFederatorRegion, directedQueries)
       }
-    case receivedResult@Result(_, _,_) =>
-      resultMap += (receivedResult.hashCode() -> receivedResult)
+    case receivedResult@Result(_, _, _) =>
       // get hash join performer region
       val bucketDistributorRegion = ClusterSharding.get(context.system).shardRegion("BucketDistributor")
-      var matched = false
-      breakable {
-        results foreach {
-          result => {
-            if (QueryManager.matchAnyVar(receivedResult.resultVars.asJava, result.resultVars.asJava)) {
-              results = results.filterNot(res => res == result)
-              bucketDistributorRegion ! DistributeBuckets(receivedResult, result)
-              resultCount -= 1
-              matched = true
-              break
-            }
-          }
-        }
-      }
-      if (!matched)
-        results = results :+ receivedResult
-
-      // if query completed print result
-      if (resultCount == 0 && results.size == 1) {
-        queryResult = Some(receivedResult)
-        notifyRegisteryList(receivedResult)
-        isJoinCompleted = true
-        applyChange
-      }
+      processResult(bucketDistributorRegion, receivedResult)
     case rc@ResultChange(_) =>
       resultChangeQueue = resultChangeQueue.enqueue(rc)
       if (isJoinCompleted) {
         applyChange
       }
+  }
+
+  def processResult(bucketDistributor: ActorRef, receivedResult: Result) = {
+    resultMap += (receivedResult.hashCode() -> receivedResult)
+    val matched = seekForMatch(bucketDistributor, receivedResult)
+    if (!matched)
+      results = results :+ receivedResult
+
+    // if query completed print result
+    if (resultCount == 0 && results.size == 1) {
+      queryResult = Some(receivedResult)
+      notifyRegisteryList(receivedResult)
+      isJoinCompleted = true
+      applyChange
+    }
+  }
+
+  private def seekForMatch(distributor: ActorRef, receivedResult: Result): Boolean = {
+    for {
+      result <- results
+      if (QueryManager.matchAnyVar(receivedResult.resultVars.asJava, result.resultVars.asJava))
+    } {
+      results = results.filterNot(res => res == result)
+      distributor ! DistributeBuckets(receivedResult, result)
+      resultCount -= 1
+      return true
+    }
+    return false
   }
 
   private def applyChange = {

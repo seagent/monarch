@@ -10,7 +10,7 @@ import play.api.libs.json.Reads._
 import scala.collection.mutable.ArrayBuffer
 
 object TestUtils {
-
+  val DBPEDIA_JOIN_QUERY_RESULT_FILE_NAME = "src/test/files/dbpedia-lmdb-join.json"
   val ACTUAL_DBPEDIA_RESULT_FILE_NAME = "src/test/files/person-dbpedia-actual.json"
   val ACTUAL_IMDB_RESULT_FILE_NAME = "src/test/files/person-imdb-actual.json"
   val DBPEDIA_ENDPOINT = "http://dbpedia.org/sparql"
