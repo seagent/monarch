@@ -14,7 +14,6 @@ import tr.edu.ege.seagent.boundarq.filterbound.MultipleNode
 
 import scala.collection.JavaConverters._
 import scala.collection.immutable.HashMap
-import scala.collection.mutable
 
 object BucketDistributor {
 
@@ -58,10 +57,14 @@ class BucketDistributor extends Actor with ActorLogging {
     }
   }
 
-  private def distributeBuckets(firstRes: Result, secondRes: Result) = {
+  protected def distributeBuckets(firstRes: Result, secondRes: Result) = {
     // get hash join performer region
     val hashJoinRegion = ClusterSharding.get(context.system).shardRegion("HashJoinPerformer")
 
+    performDistribution(hashJoinRegion, firstRes, secondRes)
+  }
+
+  protected def performDistribution(hashJoinRegion: ActorRef, firstRes: Result, secondRes: Result): Unit = {
     registerSender
 
     // find common vars between result sets

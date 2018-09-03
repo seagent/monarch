@@ -3,6 +3,7 @@ import java.io.{File, FileWriter, PrintWriter}
 import com.hp.hpl.jena.query.{QueryExecutionFactory, ResultSetFactory}
 import com.hp.hpl.jena.sparql.resultset.ResultsFormat
 import monitoring.main.MonitoringUtils
+import monitoring.message.Result
 import play.api.libs.json.Json
 import play.api.libs.json._
 import play.api.libs.json.Reads._
@@ -10,7 +11,9 @@ import play.api.libs.json.Reads._
 import scala.collection.mutable.ArrayBuffer
 
 object TestUtils {
-  val DBPEDIA_JOIN_QUERY_RESULT_FILE_NAME = "src/test/files/dbpedia-lmdb-join.json"
+  val LMDB_JOIN_RESULT_NAME = "src/test/files/lmdb-join.json"
+  val DBPEDIA_JOIN_RESULT_NAME = "src/test/files/dbpedia-join.json"
+  val DBPEDIA_LMDB_JOIN_RESULT_NAME = "src/test/files/dbpedia-lmdb-join.json"
   val ACTUAL_DBPEDIA_RESULT_FILE_NAME = "src/test/files/person-dbpedia-actual.json"
   val ACTUAL_IMDB_RESULT_FILE_NAME = "src/test/files/person-imdb-actual.json"
   val DBPEDIA_ENDPOINT = "http://dbpedia.org/sparql"
@@ -85,5 +88,11 @@ object TestUtils {
     val pw = new PrintWriter(new File(filePath))
     pw.write(jsonText)
     pw.close()
+  }
+
+  def importJsonResult(filePath: String) = {
+    val res = ResultSetFactory.load(filePath, ResultsFormat.FMT_RS_JSON)
+    val resultMock = MonitoringUtils.convertRdf2Result(res)
+    Result(resultMock.resultJSON, resultMock.resultVars, 1)
   }
 }
