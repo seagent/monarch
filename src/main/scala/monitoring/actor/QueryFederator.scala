@@ -41,10 +41,7 @@ class QueryFederator extends Actor with ActorLogging {
       if (queryResult.isDefined) {
         sender ! queryResult.get
       } else {
-        val subQueryFederatorRegion = ClusterSharding.get(context.system).shardRegion("SubQueryFederator")
-        val directedQueries = QueryManager.splitFederatedQuery(query, new util.ArrayList[Union])
-        resultCount = directedQueries.size - 1
-        distribute(subQueryFederatorRegion, directedQueries)
+        federate(query)
       }
     case receivedResult@Result(_, _, _) =>
       // get hash join performer region
@@ -55,6 +52,16 @@ class QueryFederator extends Actor with ActorLogging {
       if (isJoinCompleted) {
         applyChange
       }
+  }
+
+  protected def federate(query: String): Unit = {
+    val subQueryFederatorRegion = ClusterSharding.get(context.system).shardRegion("SubQueryFederator")
+    federate(query, subQueryFederatorRegion)
+  }
+
+  protected def federate(query: String, federator: ActorRef): Unit = {
+    val directedQueries = QueryManager.splitFederatedQuery(query, new util.ArrayList[Union])
+    distribute(federator, directedQueries)
   }
 
   def processResult(bucketDistributor: ActorRef, receivedResult: Result) = {
@@ -96,7 +103,8 @@ class QueryFederator extends Actor with ActorLogging {
     }
   }
 
-  private def distribute(subQueryFederatorRegion: ActorRef, directedQueries: util.List[DirectedQuery]) = {
+  protected def distribute(subQueryFederatorRegion: ActorRef, directedQueries: util.List[DirectedQuery]) = {
+    resultCount = directedQueries.size - 1
     directedQueries forEach {
       directedQuery => {
         subQueryFederatorRegion ! FederateSubQuery(directedQuery.getQuery, directedQuery.getEndpoints.asScala)
