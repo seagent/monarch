@@ -7,6 +7,7 @@ import com.hp.hpl.jena.sparql.resultset.ResultsFormat
 import monitoring.main.MonitoringUtils
 import monitoring.message.{ExecuteSubQuery, FederateQuery, Result, ResultChange}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
+import scala.concurrent.duration._
 
 class QueryFederatorTest extends TestKit(ActorSystem("QueryFederatorTest")) with ImplicitSender
   with WordSpecLike with Matchers with BeforeAndAfterAll {
@@ -24,7 +25,7 @@ class QueryFederatorTest extends TestKit(ActorSystem("QueryFederatorTest")) with
       val sqf = system.actorOf(Props(new MockQueryFederator))
       probe watch sqf
       // send execute sub query message
-      sqf ! FederateQuery(TestUtils.DBPEDIA_DIRECTOR_SELECT_QUERY, TestUtils.RESULT_FILE_NAME)
+      sqf ! FederateQuery(TestUtils.DBPEDIA_DIRECTOR_SELECT_QUERY)
 
       //create expected message instance
       val rsExp = ResultSetFactory.load(TestUtils.RESULT_FILE_NAME, ResultsFormat.FMT_RS_JSON)

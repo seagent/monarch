@@ -70,7 +70,7 @@ object ClientApp {
     val system = ActorSystem("Subscribing", config)
 
     val agent = system.actorOf(Agent.props, "Agent")
-    agent ! Register(GOOD_LOOKING_QUERY_2)
+    agent ! Register(GOOD_LOOKING_QUERY)
 
   }
 }
