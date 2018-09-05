@@ -4,15 +4,14 @@ import com.hp.hpl.jena.query.{QueryExecutionFactory, ResultSetFactory}
 import com.hp.hpl.jena.sparql.resultset.ResultsFormat
 import monitoring.main.MonitoringUtils
 import monitoring.message.Result
-import play.api.libs.json.Json
-import play.api.libs.json._
 import play.api.libs.json.Reads._
-
-import scala.collection.mutable.ArrayBuffer
+import play.api.libs.json._
 
 object TestUtils {
+  val GEO_JOIN_RESULT_NAME = "src/test/files/geo-join.json"
   val LMDB_JOIN_RESULT_NAME = "src/test/files/lmdb-join.json"
   val DBPEDIA_JOIN_RESULT_NAME = "src/test/files/dbpedia-join.json"
+  val DBPEDIA_LMDB_GEO_JOIN_RESULT_NAME = "src/test/files/dbpedia-lmdb-geo-join.json"
   val DBPEDIA_LMDB_JOIN_RESULT_NAME = "src/test/files/dbpedia-lmdb-join.json"
   val ACTUAL_DBPEDIA_RESULT_FILE_NAME = "src/test/files/person-dbpedia-actual.json"
   val ACTUAL_IMDB_RESULT_FILE_NAME = "src/test/files/person-imdb-actual.json"

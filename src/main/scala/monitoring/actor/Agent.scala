@@ -1,5 +1,7 @@
 package monitoring.actor
 
+import java.io.{File, FileOutputStream}
+
 import akka.actor.{Actor, ActorLogging, ActorPath, Props}
 import akka.cluster.client.{ClusterClient, ClusterClientSettings}
 import com.hp.hpl.jena.query.ResultSetFormatter

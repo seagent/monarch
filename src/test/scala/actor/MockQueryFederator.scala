@@ -1,21 +1,41 @@
 package actor
 
 import java.util
-import java.util.List
 
 import akka.actor.{ActorRef, Props}
 import main.DirectedQuery
 import monitoring.actor.QueryFederator
+import monitoring.message.{FederateSubQuery, Result}
+
+import scala.collection.JavaConverters._
 
 class MockQueryFederator extends QueryFederator {
 
+  val GEO_JOIN_RESULT_NAME = "src/test/files/geo-join.json"
+  val LMDB_JOIN_RESULT_NAME = "src/test/files/lmdb-join.json"
+  val DBPEDIA_JOIN_RESULT_NAME = "src/test/files/dbpedia-join.json"
+
   override protected def federate(query: String): Unit = {
-    val sqf = context.system.actorOf(Props(new MockSubQueryFederator))
-    federate(query, sqf)
+    //val sqf = context.system.actorOf(Props(new MockSubQueryFederator))
+    federate(query, ActorRef.noSender)
   }
 
   override protected def federate(query: String, federator: ActorRef): Unit = {
-    val directedQueries = new util.ArrayList[DirectedQuery]()
+    val directedQueries = new util.ArrayList[DirectedQuery]
+    directedQueries.add(new DirectedQuery("query-1", util.Arrays.asList(LMDB_JOIN_RESULT_NAME)))
+    directedQueries.add(new DirectedQuery("query-2", util.Arrays.asList(DBPEDIA_JOIN_RESULT_NAME)))
+    directedQueries.add(new DirectedQuery("query-3", util.Arrays.asList(GEO_JOIN_RESULT_NAME)))
+    distribute(federator, directedQueries)
+  }
+
+  override protected def directToSubQueryFederator(subQueryFederatorRegion: ActorRef, directedQuery: DirectedQuery): Unit = {
+    val sqf = context.system.actorOf(Props(new MockSubQueryFederator))
+    sqf ! FederateSubQuery(directedQuery.getQuery, directedQuery.getEndpoints.asScala)
+  }
+
+  override protected def processResult(receivedResult: Result): Unit = {
+    val bd = context.system.actorOf(Props(new MockBucketDistributor))
+    processResult(bd, receivedResult)
   }
 
 }
