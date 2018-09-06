@@ -45,7 +45,6 @@ class QueryFederator extends Actor with ActorLogging {
       }
     case receivedResult@Result(_, _, _) =>
       // get hash join performer region
-      println(receivedResult)
       processResult(receivedResult)
     case rc@ResultChange(_) =>
       resultChangeQueue = resultChangeQueue.enqueue(rc)
@@ -70,7 +69,7 @@ class QueryFederator extends Actor with ActorLogging {
   }
 
   protected def processResult(bucketDistributor: ActorRef, receivedResult: Result): Unit = {
-    resultMap += (receivedResult.hashCode() -> receivedResult)
+    resultMap += (receivedResult.key -> receivedResult)
     val matched = seekForMatch(bucketDistributor, receivedResult)
     if (!matched)
       results = results :+ receivedResult
@@ -102,7 +101,7 @@ class QueryFederator extends Actor with ActorLogging {
       isJoinCompleted = false
       val dequeueRc = resultChangeQueue.dequeue._1
       resultCount = resultMap.size - 1
-      resultMap += (dequeueRc.result.hashCode() -> dequeueRc.result)
+      resultMap += (dequeueRc.result.key -> dequeueRc.result)
       results = resultMap.values.toVector
       self ! dequeueRc.result
     }

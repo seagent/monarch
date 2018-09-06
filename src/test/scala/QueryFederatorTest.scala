@@ -44,6 +44,6 @@ class QueryFederatorTest extends TestKit(ActorSystem("QueryFederatorTest")) with
   private def createExpectedResult(endpoint: String) = {
     val rsExp = ResultSetFactory.load(endpoint, ResultsFormat.FMT_RS_JSON)
     val result = MonitoringUtils.convertRdf2Result(rsExp)
-    Result(result.resultJSON, result.resultVars, endpoint.hashCode)
+    Result(result.resultJSON, result.resultVars, 1)
   }
 }

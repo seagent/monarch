@@ -11,9 +11,9 @@ import scala.collection.JavaConverters._
 
 class MockQueryFederator extends QueryFederator {
 
-  val GEO_JOIN_RESULT_NAME = "src/test/files/geo-join.json"
-  val LMDB_JOIN_RESULT_NAME = "src/test/files/lmdb-join.json"
-  val DBPEDIA_JOIN_RESULT_NAME = "src/test/files/dbpedia-join.json"
+  private val GEO_JOIN_RESULT_NAME = "src/test/files/geo-join.json"
+  private val LMDB_JOIN_RESULT_NAME = "src/test/files/lmdb-join.json"
+  private val DBPEDIA_JOIN_RESULT_NAME = "src/test/files/dbpedia-join-1.json"
 
   override protected def federate(query: String): Unit = {
     //val sqf = context.system.actorOf(Props(new MockSubQueryFederator))
