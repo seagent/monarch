@@ -65,7 +65,7 @@ class SubQueryFederator extends Actor with ActorLogging {
     val finalResultSet = ResultSetFactory.create(new QueryIterCollection(generateBindings.asJava), resultMap.values.head.resultVars.asJava)
     val outputStream = new ByteArrayOutputStream
     ResultSetFormatter.outputAsJSON(outputStream, finalResultSet)
-    val finalResult = Result(Json.parse(outputStream.toByteArray), finalResultSet.getResultVars.asScala, 1)
+    val finalResult = Result(Json.parse(outputStream.toByteArray), finalResultSet.getResultVars.asScala, federateSubQuery.get.hashCode)
     finalResult
   }
 

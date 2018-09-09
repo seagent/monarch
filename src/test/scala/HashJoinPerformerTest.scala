@@ -21,13 +21,13 @@ class HashJoinPerformerTest extends TestKit(ActorSystem("HashJoinPerformerTest")
       // watch created actor
       probe watch hjp
       // import first result
-      val dbpediaResult = TestUtils.importJsonResult(TestUtils.DBPEDIA_JOIN_RESULT_NAME)
+      val dbpediaResult = TestUtils.importJsonResult(TestUtils.DBPEDIA_JOIN_RESULT_NAME, 1)
       // import second result
-      val lmdbResult = TestUtils.importJsonResult(TestUtils.LMDB_JOIN_RESULT_NAME)
+      val lmdbResult = TestUtils.importJsonResult(TestUtils.LMDB_JOIN_RESULT_NAME, 1)
       // send perform hash join message
       hjp ! PerformHashJoin(dbpediaResult, lmdbResult)
       // import expected join result
-      val expectedJoinResult = TestUtils.importJsonResult(TestUtils.DBPEDIA_LMDB_JOIN_RESULT_NAME)
+      val expectedJoinResult = TestUtils.importJsonResult(TestUtils.DBPEDIA_LMDB_JOIN_RESULT_NAME, 1)
       // assert if expected result is same with actual result
       expectMsg(expectedJoinResult)
       // kill actor instance

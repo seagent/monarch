@@ -79,14 +79,13 @@ class QueryFederator extends Actor with ActorLogging {
       queryResult = Some(receivedResult)
       notifyRegisteryList(receivedResult)
       isJoinCompleted = true
-      applyChange
     }
   }
 
   private def seekForMatch(distributor: ActorRef, receivedResult: Result): Boolean = {
     for {
       result <- results
-      if (QueryManager.matchAnyVar(receivedResult.resultVars.asJava, result.resultVars.asJava))
+      if QueryManager.matchAnyVar(receivedResult.resultVars.asJava, result.resultVars.asJava)
     } {
       results = results.filterNot(res => res == result)
       distributor ! DistributeBuckets(receivedResult, result)

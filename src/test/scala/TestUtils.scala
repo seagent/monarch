@@ -9,9 +9,12 @@ import play.api.libs.json._
 
 object TestUtils {
   val GEO_JOIN_RESULT_NAME = "src/test/files/geo-join.json"
+  val GEO_ORIGINAL_RESULT_NAME = "src/test/files/geo-original.json"
+  val GEO_CHANGED_RESULT_NAME = "src/test/files/geo-changed.json"
   val LMDB_JOIN_RESULT_NAME = "src/test/files/lmdb-join.json"
   val DBPEDIA_JOIN_RESULT_NAME = "src/test/files/dbpedia-join.json"
   val DBPEDIA_LMDB_GEO_JOIN_RESULT_NAME = "src/test/files/dbpedia-lmdb-geo-join.json"
+  val TRIPLE_JOIN_CHANGED_RESULT_NAME = "src/test/files/triple-join-changed.json"
   val DBPEDIA_LMDB_JOIN_RESULT_NAME = "src/test/files/dbpedia-lmdb-join.json"
   val ACTUAL_DBPEDIA_RESULT_FILE_NAME = "src/test/files/person-dbpedia-actual.json"
   val ACTUAL_IMDB_RESULT_FILE_NAME = "src/test/files/person-imdb-actual.json"
@@ -70,7 +73,7 @@ object TestUtils {
   /**
     * This method re-arranges the result file to its original
     */
-  def cleanUpResultFile(originalFile: String, testFile: String) = {
+  def changeFileInto(originalFile: String, testFile: String) = {
     val res = ResultSetFactory.load(originalFile, ResultsFormat.FMT_RS_JSON)
     val jsonValue = MonitoringUtils.convertRdf2Json(res)
     //write original json text to file
@@ -89,9 +92,9 @@ object TestUtils {
     pw.close()
   }
 
-  def importJsonResult(filePath: String) = {
+  def importJsonResult(filePath: String, expectedKey: Int) = {
     val res = ResultSetFactory.load(filePath, ResultsFormat.FMT_RS_JSON)
     val resultMock = MonitoringUtils.convertRdf2Result(res)
-    Result(resultMock.resultJSON, resultMock.resultVars, 1)
+    Result(resultMock.resultJSON, resultMock.resultVars, expectedKey)
   }
 }

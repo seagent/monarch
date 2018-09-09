@@ -35,10 +35,12 @@ class BucketDistributor extends Actor with ActorLogging {
   private var bucketCount = 0
   private var bindings: Vector[Binding] = Vector.empty
   private var registeryList: Vector[ActorRef] = Vector.empty
+  private var joinKey = 1
 
   override def receive: Receive = {
 
     case DistributeBuckets(firstRes, secondRes) =>
+      joinKey = firstRes.key + secondRes.key
       distributeBuckets(firstRes, secondRes)
 
     case result@Result(_, _, _) =>
@@ -90,7 +92,7 @@ class BucketDistributor extends Actor with ActorLogging {
   private def generateResult(vars: Seq[String], bucket: Vector[Binding]): Result = {
     val outputStream = new ByteArrayOutputStream
     ResultSetFormatter.outputAsJSON(outputStream, ResultSetFactory.create(new QueryIterCollection(bucket.asJava), vars.asJava))
-    Result(Json.parse(outputStream.toByteArray), vars, 1)
+    Result(Json.parse(outputStream.toByteArray), vars, joinKey)
   }
 
   def findCommonVars(varsFirst: Seq[String], varsSecond: Seq[String]): Vector[String] = {

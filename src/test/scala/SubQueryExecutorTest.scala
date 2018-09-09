@@ -43,7 +43,7 @@ class SubQueryExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) 
 
     "notify a change to its register list" in {
 
-      TestUtils.cleanUpResultFile(TestUtils.ACTUAL_RESULT_FILE_NAME, TestUtils.RESULT_FILE_NAME)
+      TestUtils.changeFileInto(TestUtils.ACTUAL_RESULT_FILE_NAME, TestUtils.RESULT_FILE_NAME)
 
       val probe = TestProbe()
 
@@ -75,7 +75,7 @@ class SubQueryExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) 
       val probe = TestProbe()
 
       // arrange the result file as expected
-      TestUtils.cleanUpResultFile(TestUtils.ACTUAL_RESULT_FILE_NAME, RESULT_FILE_NAME)
+      TestUtils.changeFileInto(TestUtils.ACTUAL_RESULT_FILE_NAME, RESULT_FILE_NAME)
       // create a new actor
       val sqe = system.actorOf(Props(new MockSubQueryExecutor))
       probe watch sqe
