@@ -22,7 +22,7 @@ class BucketDistributorTest extends TestKit(ActorSystem("HashJoinPerformerTest")
       // watch created actor
       probe watch bd
       // import first result
-      val dbpediaResult = TestUtils.importJsonResult(TestUtils.DBPEDIA_JOIN_RESULT_NAME, 1)
+      val dbpediaResult = TestUtils.importJsonResult(TestUtils.DBPEDIA_JOIN_RESULT_NAME,1)
       // import second result
       val lmdbResult = TestUtils.importJsonResult(TestUtils.LMDB_JOIN_RESULT_NAME, 1)
       // send perform hash join message

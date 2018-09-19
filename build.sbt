@@ -25,5 +25,6 @@ libraryDependencies ++= Seq(
   "org.apache.jena" % "jena-arq" % jenaVersion,
   "org.apache.jena" % "jena-core" % jenaVersion,
   "com.typesafe.play" %% "play-json" % jsonVersion,
-  "org.mockito" % "mockito-core" % "2.21.0" % Test
+  "org.mockito" % "mockito-core" % "2.21.0" % Test,
+  "net.debasishg" %% "redisclient" % "3.7"
 )
