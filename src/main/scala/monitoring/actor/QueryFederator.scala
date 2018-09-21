@@ -6,7 +6,7 @@ import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.sharding.{ClusterSharding, ShardRegion}
 import com.hp.hpl.jena.query.ResultSetFormatter
 import main.{DirectedQuery, QueryManager, Union}
-import monitoring.main.{Constants, RedisStore}
+import monitoring.main.{Constants, DbUtils, RedisStore}
 import monitoring.message._
 
 import scala.collection.JavaConverters._
@@ -38,13 +38,18 @@ class QueryFederator extends Actor with ActorLogging {
   private var resultChangeQueue: Queue[ResultChange] = Queue.empty
 
   override def preStart(): Unit = {
-    super.preStart()
-    //RedisStore.incr(Constants.ACTOR_COUNT)
+    super.preStart
+    DbUtils.increaseActorCount
+  }
+
+  override def postStop(): Unit = {
+    super.postStop
+    DbUtils.decreaseActorCount
   }
 
   override def receive: Receive = {
     case fq@FederateQuery(query) =>
-      //incrementQueryCount(fq)
+      DbUtils.incrementQueryCount(fq)
       log.info("Hash Code for Federate Query: [{}], and Query Value: [{}]", fq.hashCode, query)
       registerSender
       if (queryResult.isDefined) {
@@ -60,16 +65,6 @@ class QueryFederator extends Actor with ActorLogging {
       if (isJoinCompleted) {
         applyChange
       }
-  }
-
-  private def incrementQueryCount(fq: FederateQuery) = {
-    Future {
-      val query = RedisStore.get(fq.hashCode)
-      if (query.isEmpty) {
-        RedisStore.set(fq.hashCode, fq)
-        RedisStore.incr(Constants.QUERY_COUNT)
-      }
-    }
   }
 
   protected def processResult(receivedResult: Result): Unit = {

@@ -6,6 +6,7 @@ import akka.actor.{Actor, ActorLogging}
 import akka.cluster.sharding.ShardRegion
 import com.hp.hpl.jena.query.ResultSetFormatter
 import main.ResultSetMerger
+import monitoring.main.DbUtils
 import monitoring.message.{PerformHashJoin, Result}
 import play.api.libs.json.Json
 
@@ -24,6 +25,17 @@ object HashJoinPerformer {
 }
 
 class HashJoinPerformer extends Actor with ActorLogging {
+
+  override def preStart(): Unit = {
+    super.preStart
+    DbUtils.increaseActorCount
+  }
+
+  override def postStop(): Unit = {
+    super.postStop
+    DbUtils.decreaseActorCount
+  }
+
   override def receive: Receive = {
     case PerformHashJoin(firstRs, secondRs) =>
       val resultSet = new ResultSetMerger().mergeResultSets(firstRs.toResultSet, secondRs.toResultSet)

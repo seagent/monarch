@@ -7,6 +7,7 @@ import akka.cluster.sharding.{ClusterSharding, ShardRegion}
 import com.hp.hpl.jena.query.{ResultSetFactory, ResultSetFormatter}
 import com.hp.hpl.jena.sparql.engine.binding.Binding
 import main.QueryIterCollection
+import monitoring.main.DbUtils
 import monitoring.message.{ExecuteSubQuery, FederateSubQuery, Result, ResultChange}
 import play.api.libs.json.Json
 
@@ -33,6 +34,16 @@ class SubQueryFederator extends Actor with ActorLogging {
   private var resultMap: HashMap[Int, Result] = HashMap.empty
   private var queryResult: Option[Result] = None
   private var federateSubQuery: Option[FederateSubQuery] = None
+
+  override def preStart(): Unit = {
+    super.preStart
+    DbUtils.increaseActorCount
+  }
+
+  override def postStop(): Unit = {
+    super.postStop
+    DbUtils.decreaseActorCount
+  }
 
   override def receive: Receive = {
     case fsq@FederateSubQuery(query, endpoints) =>

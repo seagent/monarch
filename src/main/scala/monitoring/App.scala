@@ -7,9 +7,11 @@ import akka.cluster.client.ClusterClientReceptionist
 import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings}
 import com.typesafe.config.ConfigFactory
 import monitoring.actor._
+import monitoring.main.DbUtils
 
 object App {
   def main(args: Array[String]): Unit = {
+    DbUtils.deleteStore
     if (args.isEmpty)
       startup(Seq("2551", "2552"))
     else

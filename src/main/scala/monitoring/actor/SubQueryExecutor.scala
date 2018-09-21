@@ -3,7 +3,7 @@ package monitoring.actor
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.sharding.ShardRegion
 import com.hp.hpl.jena.query.QueryExecutionFactory
-import monitoring.main.MonitoringUtils
+import monitoring.main.{DbUtils, MonitoringUtils}
 import monitoring.message.{ExecuteSubQuery, Result, ResultChange, ScheduledQuery}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -25,6 +25,16 @@ class SubQueryExecutor extends Actor with ActorLogging {
 
   private var register: Vector[ActorRef] = Vector.empty
   private var queryResult: Option[Result] = None
+
+  override def preStart(): Unit = {
+    super.preStart
+    DbUtils.increaseActorCount
+  }
+
+  override def postStop(): Unit = {
+    super.postStop
+    DbUtils.decreaseActorCount
+  }
 
   override def receive: Receive = {
     case esq@ExecuteSubQuery(query, endpoint) =>

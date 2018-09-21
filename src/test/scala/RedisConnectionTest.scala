@@ -36,6 +36,11 @@ class RedisConnectionTest extends FlatSpec with Matchers {
     rpush("my-list", "26")
     rpush("my-list", "27")
     rpush("my-list", "25")
+    println(rpop("my-list").get)
+    println(rpop("my-list").get)
+    println(rpop("my-list").get)
+    println(rpop("my-list").get)
+
     //println(get("my-list"))
   }
 
@@ -74,6 +79,18 @@ class RedisConnectionTest extends FlatSpec with Matchers {
     client => {
       client.rpush(key, value)
       client.llen(key)
+    }
+  }
+
+  def lpop(key: Any) = clients.withClient {
+    client => {
+      client.lpop(key, value)
+    }
+  }
+
+  def rpop(key: Any) = clients.withClient {
+    client => {
+      client.rpop(key)
     }
   }
 

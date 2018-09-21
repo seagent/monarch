@@ -44,4 +44,10 @@ object RedisStore {
     }
   }
 
+  def deleteStore = redisPool.withClient {
+    client => {
+      client.flushall
+    }
+  }
+
 }

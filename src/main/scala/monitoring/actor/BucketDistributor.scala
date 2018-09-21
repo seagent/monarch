@@ -8,6 +8,7 @@ import com.hp.hpl.jena.query.{ResultSet, ResultSetFactory, ResultSetFormatter}
 import com.hp.hpl.jena.sparql.core.Var
 import com.hp.hpl.jena.sparql.engine.binding.Binding
 import main.QueryIterCollection
+import monitoring.main.DbUtils
 import monitoring.message.{DistributeBuckets, PerformHashJoin, Result}
 import play.api.libs.json.Json
 import tr.edu.ege.seagent.boundarq.filterbound.MultipleNode
@@ -36,6 +37,17 @@ class BucketDistributor extends Actor with ActorLogging {
   private var bindings: Vector[Binding] = Vector.empty
   private var registeryList: Vector[ActorRef] = Vector.empty
   private var joinKey = 1
+
+  override def preStart(): Unit = {
+    super.preStart
+    DbUtils.increaseActorCount
+  }
+
+
+  override def postStop(): Unit = {
+    super.postStop
+    DbUtils.decreaseActorCount
+  }
 
   override def receive: Receive = {
 
