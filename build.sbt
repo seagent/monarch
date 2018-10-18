@@ -29,3 +29,5 @@ libraryDependencies ++= Seq(
   "net.debasishg" %% "redisclient" % "3.7",
   "com.typesafe.play" %% "play-logback" % "2.6.19"
 )
+
+unmanagedJars in Compile += file("lib/query-manager.jar")

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/monitoring-environment.iml" filepath="$PROJECT_DIR$/.idea/modules/monitoring-environment.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/QueryMonitor.iml" filepath="$PROJECT_DIR$/.idea/modules/QueryMonitor.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/monitoring-environment-build.iml" filepath="$PROJECT_DIR$/.idea/modules/monitoring-environment-build.iml" />
     </modules>
   </component>

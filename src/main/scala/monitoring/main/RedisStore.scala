@@ -4,7 +4,7 @@ import com.redis.RedisClientPool
 
 object RedisStore {
 
-  val redisPool = new RedisClientPool("localhost", 6379)
+  val redisPool = new RedisClientPool("155.223.25.3", 6379)
 
   def set(key: Any, value: Any) = redisPool.withClient {
     client => {
