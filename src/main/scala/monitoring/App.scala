@@ -42,7 +42,7 @@ object App {
     // talking to each other.
     ports foreach { port =>
       // Override the configuration of the port
-      val config = ConfigFactory.parseString("akka.remote.artery.canonical.hostname = " + "127.0.0.1").
+      val config = ConfigFactory.parseString("akka.remote.artery.canonical.hostname = " + getIpAddress).
         withFallback(ConfigFactory.parseString("akka.remote.artery.canonical.port = " + port)).
         withFallback(ConfigFactory.load())
 

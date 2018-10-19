@@ -1,5 +1,7 @@
 package monitoring
 
+import java.net.{InetAddress, NetworkInterface}
+
 import akka.actor.{ActorPath, ActorSystem, Props}
 import akka.cluster.client.{ClusterClient, ClusterClientSettings}
 import com.typesafe.config.ConfigFactory
@@ -62,7 +64,7 @@ object ClientApp {
       |""".stripMargin
 
   def main(args: Array[String]): Unit = {
-    val config = ConfigFactory.parseString("akka.remote.artery.canonical.hostname = " + "127.0.0.1").
+    val config = ConfigFactory.parseString("akka.remote.artery.canonical.hostname = " + getIpAddress).
       withFallback(ConfigFactory.parseString("akka.remote.artery.canonical.port = " + 2553)).
       withFallback(ConfigFactory.load("agent.conf"))
 
@@ -72,5 +74,23 @@ object ClientApp {
     val agent = system.actorOf(Agent.props, "Agent")
     agent ! Register(GOOD_LOOKING_QUERY)
 
+  }
+
+  private def getIpAddress: String = {
+    val e = NetworkInterface.getNetworkInterfaces
+    if (e.hasMoreElements) {
+      val n = e.nextElement match {
+        case e: NetworkInterface => e
+        case _ => ???
+      }
+      val ee = n.getInetAddresses
+      if (ee.hasMoreElements) {
+        ee.nextElement match {
+          case e: InetAddress => return e.getHostAddress
+          case _ => ???
+        }
+      }
+    }
+    return "127.0.0.1"
   }
 }

@@ -16,8 +16,10 @@ class Agent extends Actor with ActorLogging {
   override def receive: Receive = {
     case register@Register(_) =>
       val initialContacts = Set(
-        ActorPath.fromString("akka://Monitoring@127.0.0.1:2551/system/receptionist"),
-        ActorPath.fromString("akka://Monitoring@127.0.0.1:2552/system/receptionist"))
+        ActorPath.fromString("akka://Monitoring@155.223.25.1:2551/system/receptionist"),
+        ActorPath.fromString("akka://Monitoring@155.223.25.2:2551/system/receptionist"),
+        ActorPath.fromString("akka://Monitoring@155.223.25.3:2551/system/receptionist"),
+        ActorPath.fromString("akka://Monitoring@155.223.25.4:2551/system/receptionist"))
       val client = context.actorOf(ClusterClient.props(
         ClusterClientSettings(context.system).withInitialContacts(initialContacts)), "client")
       client ! ClusterClient.Send("/system/sharding/QueryFederator", FederateQuery(register.query), localAffinity = true)
