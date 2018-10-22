@@ -21,13 +21,11 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-cluster-sharding" % akkaVersion,
   "com.typesafe.akka" %% "akka-multi-node-testkit" % akkaVersion,
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,
-  "io.kamon" % "sigar-loader" % "1.6.6-rev002",
   "org.apache.jena" % "jena-arq" % jenaVersion,
   "org.apache.jena" % "jena-core" % jenaVersion,
   "com.typesafe.play" %% "play-json" % jsonVersion,
-  "org.mockito" % "mockito-core" % "2.21.0" % Test,
   "net.debasishg" %% "redisclient" % "3.7",
   "com.typesafe.play" %% "play-logback" % "2.6.19"
 )
 
-unmanagedJars in Compile += file("lib/query-manager.jar")
+enablePlugins(JavaAppPackaging)
