@@ -64,8 +64,15 @@ object ClientApp {
       |""".stripMargin
 
   def main(args: Array[String]): Unit = {
-    val config = ConfigFactory.parseString("akka.remote.artery.canonical.hostname = " + getIpAddress).
-      withFallback(ConfigFactory.parseString("akka.remote.artery.canonical.port = " + 2553)).
+
+    var ipAddress = getIpAddress
+    var port = "2553"
+    if (args.size > 1) {
+      ipAddress = args(0)
+      port = args(1)
+    }
+    val config = ConfigFactory.parseString("akka.remote.artery.canonical.hostname = " + ipAddress).
+      withFallback(ConfigFactory.parseString("akka.remote.artery.canonical.port = " + port)).
       withFallback(ConfigFactory.load("agent.conf"))
 
     // Create an Akka system

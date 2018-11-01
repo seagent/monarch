@@ -24,8 +24,7 @@ libraryDependencies ++= Seq(
   "org.apache.jena" % "jena-arq" % jenaVersion,
   "org.apache.jena" % "jena-core" % jenaVersion,
   "com.typesafe.play" %% "play-json" % jsonVersion,
-  "net.debasishg" %% "redisclient" % "3.7",
-  "com.typesafe.play" %% "play-logback" % "2.6.19"
+  "net.debasishg" %% "redisclient" % "3.7"
 )
 
 enablePlugins(JavaAppPackaging)

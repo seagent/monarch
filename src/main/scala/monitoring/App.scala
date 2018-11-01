@@ -36,58 +36,62 @@ object App {
     return "127.0.0.1"
   }
 
-  def startup(ports: Seq[String]): Unit = {
+  def startup(args: Seq[String]): Unit = {
     // In a production application you wouldn't typically start multiple ActorSystem instances in the
     // same JVM, here we do it to easily demonstrate these ActorSytems (which would be in separate JVM's)
     // talking to each other.
-    ports foreach { port =>
-      // Override the configuration of the port
-      val config = ConfigFactory.parseString("akka.remote.artery.canonical.hostname = " + getIpAddress).
-        withFallback(ConfigFactory.parseString("akka.remote.artery.canonical.port = " + port)).
-        withFallback(ConfigFactory.load())
-
-      // Create an Akka system
-      val system = ActorSystem("Monitoring", config)
-      // Create an actor that starts the sharding and sends random messages
-
-      val federatorRegion = ClusterSharding(system).start(
-        typeName = "QueryFederator",
-        entityProps = Props[QueryFederator],
-        settings = ClusterShardingSettings(system),
-        extractEntityId = QueryFederator.extractEntityId,
-        extractShardId = QueryFederator.extractShardId)
-
-      ClusterClientReceptionist(system).registerService(federatorRegion)
-
-      ClusterSharding(system).start(
-        typeName = "SubQueryFederator",
-        entityProps = Props[SubQueryFederator],
-        settings = ClusterShardingSettings(system),
-        extractEntityId = SubQueryFederator.extractEntityId,
-        extractShardId = SubQueryFederator.extractShardId)
-
-      ClusterSharding(system).start(
-        typeName = "SubQueryExecutor",
-        entityProps = Props[SubQueryExecutor],
-        settings = ClusterShardingSettings(system),
-        extractEntityId = SubQueryExecutor.extractEntityId,
-        extractShardId = SubQueryExecutor.extractShardId)
-
-      ClusterSharding(system).start(
-        typeName = "BucketDistributor",
-        entityProps = Props[BucketDistributor],
-        settings = ClusterShardingSettings(system),
-        extractEntityId = BucketDistributor.extractEntityId,
-        extractShardId = BucketDistributor.extractShardId)
-
-      ClusterSharding(system).start(
-        typeName = "HashJoinPerformer",
-        entityProps = Props[HashJoinPerformer],
-        settings = ClusterShardingSettings(system),
-        extractEntityId = HashJoinPerformer.extractEntityId,
-        extractShardId = HashJoinPerformer.extractShardId)
-
+    var ipAddress = getIpAddress
+    var port = "2551"
+    if (args.size > 1) {
+      ipAddress = args(0)
+      port = args(1)
     }
+    // Override the configuration of the port
+    val config = ConfigFactory.parseString("akka.remote.artery.canonical.hostname = " + ipAddress).
+      withFallback(ConfigFactory.parseString("akka.remote.artery.canonical.port = " + port)).
+      withFallback(ConfigFactory.load())
+
+    // Create an Akka system
+    val system = ActorSystem("Monitoring", config)
+    // Create an actor that starts the sharding and sends random messages
+
+    val federatorRegion = ClusterSharding(system).start(
+      typeName = "QueryFederator",
+      entityProps = Props[QueryFederator],
+      settings = ClusterShardingSettings(system),
+      extractEntityId = QueryFederator.extractEntityId,
+      extractShardId = QueryFederator.extractShardId)
+
+    ClusterClientReceptionist(system).registerService(federatorRegion)
+
+    ClusterSharding(system).start(
+      typeName = "SubQueryFederator",
+      entityProps = Props[SubQueryFederator],
+      settings = ClusterShardingSettings(system),
+      extractEntityId = SubQueryFederator.extractEntityId,
+      extractShardId = SubQueryFederator.extractShardId)
+
+    ClusterSharding(system).start(
+      typeName = "SubQueryExecutor",
+      entityProps = Props[SubQueryExecutor],
+      settings = ClusterShardingSettings(system),
+      extractEntityId = SubQueryExecutor.extractEntityId,
+      extractShardId = SubQueryExecutor.extractShardId)
+
+    ClusterSharding(system).start(
+      typeName = "BucketDistributor",
+      entityProps = Props[BucketDistributor],
+      settings = ClusterShardingSettings(system),
+      extractEntityId = BucketDistributor.extractEntityId,
+      extractShardId = BucketDistributor.extractShardId)
+
+    ClusterSharding(system).start(
+      typeName = "HashJoinPerformer",
+      entityProps = Props[HashJoinPerformer],
+      settings = ClusterShardingSettings(system),
+      extractEntityId = HashJoinPerformer.extractEntityId,
+      extractShardId = HashJoinPerformer.extractShardId)
+
 
   }
 }
