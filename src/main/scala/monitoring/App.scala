@@ -10,12 +10,16 @@ import monitoring.actor._
 import monitoring.main.DbUtils
 
 object App {
+
+  val CLEAN = "clean"
+
   def main(args: Array[String]): Unit = {
-    DbUtils.deleteStore
-    if (args.isEmpty)
-      startup(Seq("2551", "2552"))
-    else
+    if (args.isEmpty) {
+      startup(Seq("127.0.0.1", "2552"))
+    }
+    else {
       startup(args)
+    }
   }
 
   private def getIpAddress: String = {
@@ -36,6 +40,7 @@ object App {
     return "127.0.0.1"
   }
 
+
   def startup(args: Seq[String]): Unit = {
     // In a production application you wouldn't typically start multiple ActorSystem instances in the
     // same JVM, here we do it to easily demonstrate these ActorSytems (which would be in separate JVM's)
@@ -45,6 +50,9 @@ object App {
     if (args.size > 1) {
       ipAddress = args(0)
       port = args(1)
+    }
+    if (args.size == 3 && args(2) == CLEAN) {
+      DbUtils.deleteStore
     }
     // Override the configuration of the port
     val config = ConfigFactory.parseString("akka.remote.artery.canonical.hostname = " + ipAddress).
