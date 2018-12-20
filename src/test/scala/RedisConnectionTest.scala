@@ -9,17 +9,17 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 
 class RedisConnectionTest extends FlatSpec with Matchers {
-  //val HOST="155.223.25.3"
-  val HOST="localhost"
+  val HOST="155.223.25.3"
+  //val HOST="localhost"
   val clients = new RedisClientPool(HOST, 6379)
 
   "Redis client " should "do the operations to redis database" in {
     // delete store before start
     println(get("query-count").getOrElse("no value for index 'query-count'"))
     println(get("actor-count").getOrElse("no value for index 'actor-count'"))
-    deleteStore
-    println(get("query-count").getOrElse("no value for index 'query-count'"))
-    println(get("actor-count").getOrElse("no value for index 'actor-count'"))
+    //deleteStore
+    //println(get("query-count").getOrElse("no value for index 'query-count'"))
+    //println(get("actor-count").getOrElse("no value for index 'actor-count'"))
     clients.close
     /*set("my-key", "13")
     println(get("my-key").get)

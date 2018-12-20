@@ -24,7 +24,8 @@ class Agent extends Actor with ActorLogging {
         ClusterClientSettings(context.system).withInitialContacts(initialContacts)), "client")
       client ! ClusterClient.Send("/system/sharding/QueryFederator", FederateQuery(register.query), localAffinity = true)
     case result@Result(_, _, _) =>
-      ResultSetFormatter.out(result.toResultSet)
+      //ResultSetFormatter.out(result.toResultSet)
+      log.info("Result key: [{}], result-value: [{}]", result.key, result.resultJSON.hashCode)
       log.info("Current query count: [{}], and current actor count: [{}]", RedisStore.get(Constants.QUERY_COUNT).get, RedisStore.get(Constants.ACTOR_COUNT).get)
   }
 }

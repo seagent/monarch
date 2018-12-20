@@ -4,16 +4,12 @@ import java.util
 
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.sharding.{ClusterSharding, ShardRegion}
-import com.hp.hpl.jena.query.ResultSetFormatter
 import main.{DirectedQuery, QueryManager, Union}
-import monitoring.main.{Constants, DbUtils, RedisStore}
+import monitoring.main.DbUtils
 import monitoring.message._
 
 import scala.collection.JavaConverters._
 import scala.collection.immutable.{HashMap, Queue}
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.control.Breaks._
 
 object QueryFederator {
   val extractEntityId: ShardRegion.ExtractEntityId = {
@@ -36,6 +32,7 @@ class QueryFederator extends Actor with ActorLogging {
   private var queryResult: Option[Result] = None
   private var isJoinCompleted: Boolean = false
   private var resultChangeQueue: Queue[ResultChange] = Queue.empty
+  private var federateQuery: Option[FederateQuery] = None
 
   override def preStart(): Unit = {
     super.preStart
@@ -49,8 +46,9 @@ class QueryFederator extends Actor with ActorLogging {
 
   override def receive: Receive = {
     case fq@FederateQuery(query) =>
+      federateQuery = Some(fq)
       DbUtils.incrementQueryCount(fq)
-      log.info("Hash Code for Federate Query: [{}], and Query Value: [{}]", fq.hashCode, query)
+      log.debug("Hash Code for Federate Query: [{}], and Query Value: [{}]", fq.hashCode, query)
       registerSender
       if (queryResult.isDefined) {
         sender ! queryResult.get
@@ -90,8 +88,14 @@ class QueryFederator extends Actor with ActorLogging {
 
     // if query completed print result
     if (resultCount == 0 && results.size == 1) {
+      if (queryResult.isEmpty) {
+        log.info("Result has been constructed for the federated query [{}]", federateQuery.get.query)
+        notifyRegisteryList(receivedResult)
+      } else if (!queryResult.contains(receivedResult)) {
+        log.info("A result change has been detected for the federated query [{}]", federateQuery.get.query)
+        notifyRegisteryList(receivedResult)
+      }
       queryResult = Some(receivedResult)
-      notifyRegisteryList(receivedResult)
       isJoinCompleted = true
     }
   }
@@ -143,6 +147,7 @@ class QueryFederator extends Actor with ActorLogging {
     registeryList foreach {
       registered => {
         registered ! result
+        //log.info("Changed result has been sent to the agent [{}]", registered)
       }
     }
   }

@@ -48,7 +48,7 @@ class SubQueryFederator extends Actor with ActorLogging {
   override def receive: Receive = {
     case fsq@FederateSubQuery(query, endpoints) =>
       federateSubQuery = Some(fsq)
-      log.info("Hash Code for Federate Sub Query: [{}], and Query Value: [{}], Endpoint Values: [{}]", fsq.hashCode, query, endpoints)
+      log.debug("Hash Code for Federate Sub Query: [{}], and Query Value: [{}], Endpoint Values: [{}]", fsq.hashCode, query, endpoints)
       if (queryResult.isDefined) {
         sender ! queryResult.get
       } else {
@@ -67,8 +67,10 @@ class SubQueryFederator extends Actor with ActorLogging {
     case rc@ResultChange(_) =>
       resultMap += (rc.result.key -> rc.result)
       val newRes = constructResult
-      if (!queryResult.contains(newRes))
+      if (!queryResult.contains(newRes)) {
+        log.info("A change has been detected for the sub-query [{}], and endpoints [{}]", federateSubQuery.get.query, federateSubQuery.get.endpoints)
         notifyRegisteryList(ResultChange(newRes))
+      }
       queryResult = Some(newRes)
   }
 

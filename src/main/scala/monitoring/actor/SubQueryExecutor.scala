@@ -38,7 +38,7 @@ class SubQueryExecutor extends Actor with ActorLogging {
 
   override def receive: Receive = {
     case esq@ExecuteSubQuery(query, endpoint) =>
-      log.info("Hash Code for Execute Sub Query: [{}], and Query Value: [{}], Endpoint Value: [{}]", esq.hashCode, query, endpoint)
+      log.debug("Hash Code for Execute Sub Query: [{}], and Query Value: [{}], Endpoint Value: [{}]", esq.hashCode, query, endpoint)
       registerSender
       if (queryResult.isDefined) {
         sender ! queryResult.get
@@ -50,19 +50,17 @@ class SubQueryExecutor extends Actor with ActorLogging {
       }
 
     case sq@ScheduledQuery(esq) =>
-      log.info("Hash Code for Scheduled Sub Query: [{}], and Scheduled Query Value: [{}]", sq.hashCode, esq)
+      //log.info("Hash Code for Scheduled Sub Query: [{}], and Scheduled Query Value: [{}]", sq.hashCode, esq)
       val result = executeQuery(esq.query, esq.endpoint)
       if (!queryResult.contains(result)) {
-        log.info("A change has been detected for the query [{}], and endpoint [{}]", esq.query, esq.endpoint)
+        log.info("A change has been detected for the sub-query [{}], and endpoint [{}]", esq.query, esq.endpoint)
         queryResult = Some(result)
         notifyRegisteryList(ResultChange(result))
-      } else {
-        log.info("No change detected for the query [{}]", esq)
       }
   }
 
   protected def schedule(sq: ScheduledQuery) = {
-    context.system.scheduler.schedule(0.seconds, 20.seconds, self, sq)
+    context.system.scheduler.schedule(0.seconds, 1.minute, self, sq)
   }
 
   private def notifyRegisteryList(message: Any) = {
