@@ -4,6 +4,7 @@ import java.util
 
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.sharding.{ClusterSharding, ShardRegion}
+import com.hp.hpl.jena.query.ResultSetFormatter
 import main.{DirectedQuery, QueryManager, Union}
 import monitoring.main.DbUtils
 import monitoring.message._
@@ -13,13 +14,13 @@ import scala.collection.immutable.{HashMap, Queue}
 
 object QueryFederator {
   val extractEntityId: ShardRegion.ExtractEntityId = {
-    case msg@FederateQuery(query) => (query.hashCode.toString, msg)
+    case msg@FederateQuery(query, _) => (query.hashCode.toString, msg)
   }
 
   private val numberOfShards = 20
 
   val extractShardId: ShardRegion.ExtractShardId = {
-    case FederateQuery(query) => (query.hashCode % numberOfShards).toString
+    case FederateQuery(query, _) => (query.hashCode % numberOfShards).toString
   }
 }
 
@@ -27,11 +28,9 @@ class QueryFederator extends Actor with ActorLogging {
 
   private var resultCount = 0
   private var results: Vector[Result] = Vector.empty
-  private var registeryList: Vector[ActorRef] = Vector.empty
+  private var registeryList: Vector[String] = Vector.empty
   private var resultMap: HashMap[Int, Result] = HashMap.empty
   private var queryResult: Option[Result] = None
-  private var isJoinCompleted: Boolean = false
-  private var resultChangeQueue: Queue[ResultChange] = Queue.empty
   private var federateQuery: Option[FederateQuery] = None
 
   override def preStart(): Unit = {
@@ -45,11 +44,11 @@ class QueryFederator extends Actor with ActorLogging {
   }
 
   override def receive: Receive = {
-    case fq@FederateQuery(query) =>
+    case fq@FederateQuery(query, senderPath) =>
       federateQuery = Some(fq)
       DbUtils.incrementQueryCount(fq)
       log.debug("Hash Code for Federate Query: [{}], and Query Value: [{}]", fq.hashCode, query)
-      registerSender
+      registerSender(senderPath)
       if (queryResult.isDefined) {
         sender ! queryResult.get
       } else {
@@ -59,10 +58,7 @@ class QueryFederator extends Actor with ActorLogging {
       // get hash join performer region
       processResult(receivedResult)
     case rc@ResultChange(_) =>
-      resultChangeQueue = resultChangeQueue.enqueue(rc)
-      if (isJoinCompleted) {
-        applyChange
-      }
+      applyChange(rc)
   }
 
   protected def processResult(receivedResult: Result): Unit = {
@@ -81,7 +77,9 @@ class QueryFederator extends Actor with ActorLogging {
   }
 
   protected def processResult(bucketDistributor: ActorRef, receivedResult: Result): Unit = {
-    resultMap += (receivedResult.key -> receivedResult)
+    if (receivedResult.key != 1) {
+      resultMap += (receivedResult.key -> receivedResult)
+    }
     val matched = seekForMatch(bucketDistributor, receivedResult)
     if (!matched)
       results = results :+ receivedResult
@@ -96,7 +94,6 @@ class QueryFederator extends Actor with ActorLogging {
         notifyRegisteryList(receivedResult)
       }
       queryResult = Some(receivedResult)
-      isJoinCompleted = true
     }
   }
 
@@ -113,15 +110,11 @@ class QueryFederator extends Actor with ActorLogging {
     return false
   }
 
-  private def applyChange = {
-    if (resultChangeQueue.nonEmpty) {
-      isJoinCompleted = false
-      val dequeueRc = resultChangeQueue.dequeue._1
-      resultCount = resultMap.size - 1
-      resultMap += (dequeueRc.result.key -> dequeueRc.result)
-      results = resultMap.values.toVector
-      self ! dequeueRc.result
-    }
+  private def applyChange(resultChange: ResultChange) = {
+    resultCount = resultMap.size - 1
+    resultMap += (resultChange.result.key -> resultChange.result)
+    results = resultMap.values.toVector.filterNot(res => res == resultChange.result)
+    self ! resultChange.result
   }
 
   protected def distribute(subQueryFederatorRegion: ActorRef, directedQueries: util.List[DirectedQuery]) = {
@@ -137,16 +130,16 @@ class QueryFederator extends Actor with ActorLogging {
     subQueryFederatorRegion ! FederateSubQuery(directedQuery.getQuery, directedQuery.getEndpoints.asScala)
   }
 
-  private def registerSender = {
-    if (!registeryList.contains(sender)) {
-      registeryList = registeryList :+ sender
+  private def registerSender(senderPath: String) = {
+    if (!registeryList.contains(senderPath)) {
+      registeryList = registeryList :+ senderPath
     }
   }
 
   private def notifyRegisteryList(result: Result) = {
     registeryList foreach {
       registered => {
-        registered ! result
+        context.actorSelection(registered) ! result
         //log.info("Changed result has been sent to the agent [{}]", registered)
       }
     }

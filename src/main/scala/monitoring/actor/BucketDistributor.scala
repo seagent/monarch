@@ -52,7 +52,6 @@ class BucketDistributor extends Actor with ActorLogging {
   override def receive: Receive = {
 
     case DistributeBuckets(firstRes, secondRes) =>
-      joinKey = firstRes.key + secondRes.key
       distributeBuckets(firstRes, secondRes)
 
     case result@Result(_, _, _) =>

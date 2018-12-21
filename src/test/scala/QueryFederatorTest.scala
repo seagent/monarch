@@ -31,10 +31,10 @@ class QueryFederatorTest extends TestKit(ActorSystem("QueryFederatorTest")) with
       val qf = system.actorOf(Props(new MockQueryFederator))
       probe watch qf
       // send execute sub query message
-      qf ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY)
+      qf ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY, ""+qf.path.toString)
 
       //create expected message instance
-      val expectedResult = createExpectedResult(TestUtils.DBPEDIA_LMDB_GEO_JOIN_RESULT_NAME, -657188017)
+      val expectedResult = createExpectedResult(TestUtils.DBPEDIA_LMDB_GEO_JOIN_RESULT_NAME, 1)
       // check if received message is the expected one
       expectMsg(expectedResult)
       // kill actor instance
@@ -50,16 +50,16 @@ class QueryFederatorTest extends TestKit(ActorSystem("QueryFederatorTest")) with
       val qf = system.actorOf(Props(new MockQueryFederator))
       probe watch qf
       // send execute sub query message
-      qf ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY)
+      qf ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY, qf.path.toString)
 
       //create expected message instance
-      val expectedResult = createExpectedResult(TestUtils.DBPEDIA_LMDB_GEO_JOIN_RESULT_NAME, -657188017)
+      val expectedResult = createExpectedResult(TestUtils.DBPEDIA_LMDB_GEO_JOIN_RESULT_NAME, 1)
       // check if received message is the expected one
       expectMsg(expectedResult)
 
       TestUtils.changeFileInto(TestUtils.GEO_CHANGED_RESULT_NAME, TestUtils.GEO_JOIN_RESULT_NAME)
       // create expected message instance
-      val expectedChangedResult = createExpectedResult(TestUtils.TRIPLE_JOIN_CHANGED_RESULT_NAME, 1918268440)
+      val expectedChangedResult = createExpectedResult(TestUtils.TRIPLE_JOIN_CHANGED_RESULT_NAME, 1)
       // check if received result is result change message
       expectMsg(10.seconds, expectedChangedResult)
       // kill actor instance
@@ -75,13 +75,13 @@ class QueryFederatorTest extends TestKit(ActorSystem("QueryFederatorTest")) with
       val qf = system.actorOf(Props(new MockQueryFederator))
       probe watch qf
       // send execute sub query message
-      qf ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY)
+      qf ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY, qf.path.toString)
 
       //create expected message instance
-      val expectedResult = createExpectedResult(TestUtils.DBPEDIA_LMDB_GEO_JOIN_RESULT_NAME, -657188017)
+      val expectedResult = createExpectedResult(TestUtils.DBPEDIA_LMDB_GEO_JOIN_RESULT_NAME, 1)
       expectMsg(expectedResult)
       // send same query again
-      qf ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY)
+      qf ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY, qf.path.toString)
       // expect same result
       expectMsg(expectedResult)
       // kill actor instance
