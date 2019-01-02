@@ -34,7 +34,7 @@ object AgentApp {
     for (orgData <- organizationDataList.asScala) {
       index += 1
       val agent = system.actorOf(Agent.props, "Agent-" + index)
-      println(system.actorSelection("akka://Subscribing@172.17.0.1:2553/user/"+agent.path.name))
+      //println(system.actorSelection("akka://Subscribing@172.17.0.1:2553/user/"+agent.path.name))
       val rawQuery = String.format(OrganizationConstants.STOCK_QUERY_TEMPLATE, orgData.getDbpediaCompany)
       val wodqaEngine = new WodqaEngine(true, false)
       val federatedQuery = wodqaEngine.federateQuery(voidModel, rawQuery, false)

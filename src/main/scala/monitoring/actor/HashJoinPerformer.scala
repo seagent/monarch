@@ -2,7 +2,7 @@ package monitoring.actor
 
 import java.io.ByteArrayOutputStream
 
-import akka.actor.{Actor, ActorLogging}
+import akka.actor.{Actor, ActorLogging, PoisonPill, Props}
 import akka.cluster.sharding.ShardRegion
 import com.hp.hpl.jena.query.ResultSetFormatter
 import main.ResultSetMerger
@@ -22,6 +22,8 @@ object HashJoinPerformer {
   val extractShardId: ShardRegion.ExtractShardId = {
     case phj@PerformHashJoin(_, _) => (phj.hashCode % numberOfShards).toString
   }
+
+  //def props: Props = Props(new HashJoinPerformer)
 }
 
 class HashJoinPerformer extends Actor with ActorLogging {
@@ -44,5 +46,10 @@ class HashJoinPerformer extends Actor with ActorLogging {
       ResultSetFormatter.outputAsJSON(outputStream, resultSet)
       //send hash join result back to the sender
       sender ! Result(Json.parse(outputStream.toByteArray), resultSet.getResultVars.asScala, 1)
+      context.parent ! ShardRegion.Passivate
+
+    case ShardRegion.Passivate =>
+      log.info("Passivation message has been received from parent shard!")
+      context.stop(self)
   }
 }

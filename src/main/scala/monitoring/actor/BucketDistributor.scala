@@ -2,7 +2,7 @@ package monitoring.actor
 
 import java.io.ByteArrayOutputStream
 
-import akka.actor.{Actor, ActorLogging, ActorRef}
+import akka.actor.{Actor, ActorLogging, ActorRef, PoisonPill, Props}
 import akka.cluster.sharding.{ClusterSharding, ShardRegion}
 import com.hp.hpl.jena.query.{ResultSet, ResultSetFactory, ResultSetFormatter}
 import com.hp.hpl.jena.sparql.core.Var
@@ -29,6 +29,8 @@ object BucketDistributor {
   val extractShardId: ShardRegion.ExtractShardId = {
     case dbs@DistributeBuckets(_, _) => (dbs.hashCode % numberOfShards).toString
   }
+
+  //def props: Props = Props(new BucketDistributor)
 }
 
 class BucketDistributor extends Actor with ActorLogging {
@@ -43,7 +45,6 @@ class BucketDistributor extends Actor with ActorLogging {
     DbUtils.increaseActorCount
   }
 
-
   override def postStop(): Unit = {
     super.postStop
     DbUtils.decreaseActorCount
@@ -57,6 +58,10 @@ class BucketDistributor extends Actor with ActorLogging {
     case result@Result(_, _, _) =>
       handleJoinResult(result)
 
+    case ShardRegion.Passivate =>
+      log.info("Passivation message has been received from parent shard!")
+      context.stop(self)
+
   }
 
   private def handleJoinResult(result: Result) = {
@@ -67,6 +72,7 @@ class BucketDistributor extends Actor with ActorLogging {
     if (bucketCount == 0) {
       val result = generateResult(resultSet.getResultVars.asScala, bindings)
       notifyRegisteryList(result)
+      context.parent ! ShardRegion.Passivate
     }
   }
 

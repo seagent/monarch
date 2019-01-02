@@ -29,11 +29,13 @@ class SubQueryExecutor extends Actor with ActorLogging {
   override def preStart(): Unit = {
     super.preStart
     DbUtils.increaseActorCount
+    log.info("Actor count has been increased")
   }
 
   override def postStop(): Unit = {
     super.postStop
     DbUtils.decreaseActorCount
+    log.info("Actor count has been decreased")
   }
 
   override def receive: Receive = {
