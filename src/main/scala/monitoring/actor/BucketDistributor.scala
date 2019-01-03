@@ -72,7 +72,7 @@ class BucketDistributor extends Actor with ActorLogging {
     if (bucketCount == 0) {
       val result = generateResult(resultSet.getResultVars.asScala, bindings)
       notifyRegisteryList(result)
-      context.parent ! ShardRegion.Passivate
+      context.parent ! ShardRegion.Passivate(stopMessage = PoisonPill)
     }
   }
 
