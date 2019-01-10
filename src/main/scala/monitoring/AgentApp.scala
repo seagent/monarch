@@ -14,9 +14,12 @@ import collection.JavaConverters._
 
 object AgentApp {
 
+  private val DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE = "http://dbpedia.org/resource/company-"
+  private val COMPANY_COUNT = 10000
+
   def main(args: Array[String]): Unit = {
     val organizationDataList = OrganizationDataReader.readOrganizationData("/organization_data.txt")
-    val voidModel = VoidModelConstructor.constructVOIDSpaceModel(System.getenv("HOME") +"/void")
+    val voidModel = VoidModelConstructor.constructVOIDSpaceModel(System.getenv("HOME") + "/void")
 
     var ipAddress = getIpAddress
     var port = "2553"
@@ -30,12 +33,14 @@ object AgentApp {
 
     // Create an Akka system
     val system = ActorSystem("Subscribing", config)
-    var index = 0
-    for (orgData <- organizationDataList.asScala) {
-      index += 1
+    //var index = 0
+    //for (orgData <- organizationDataList.asScala) {
+    //index += 1
+    for (index <- 0 to COMPANY_COUNT) {
       val agent = system.actorOf(Agent.props, "Agent-" + index)
       //println(system.actorSelection("akka://Subscribing@172.17.0.1:2553/user/"+agent.path.name))
-      val rawQuery = String.format(OrganizationConstants.STOCK_QUERY_TEMPLATE, orgData.getDbpediaCompany)
+      //val rawQuery = String.format(OrganizationConstants.STOCK_QUERY_TEMPLATE, orgData.getDbpediaCompany)
+      val rawQuery = String.format(OrganizationConstants.STOCK_QUERY_TEMPLATE, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + (index + 1))
       val wodqaEngine = new WodqaEngine(true, false)
       val federatedQuery = wodqaEngine.federateQuery(voidModel, rawQuery, false)
       agent ! Register(federatedQuery)
