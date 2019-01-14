@@ -1,6 +1,7 @@
 package monitoring.actor
 
 import java.io.ByteArrayOutputStream
+import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging, ActorRef, PoisonPill, Props}
 import akka.cluster.sharding.{ClusterSharding, ShardRegion}
@@ -30,7 +31,7 @@ object BucketDistributor {
     case dbs@DistributeBuckets(_, _) => (dbs.hashCode % numberOfShards).toString
   }
 
-  //def props: Props = Props(new BucketDistributor)
+  def props: Props = Props(new BucketDistributor)
 }
 
 class BucketDistributor extends Actor with ActorLogging {
@@ -72,14 +73,15 @@ class BucketDistributor extends Actor with ActorLogging {
     if (bucketCount == 0) {
       val result = generateResult(resultSet.getResultVars.asScala, bindings)
       notifyRegisteryList(result)
-      context.parent ! ShardRegion.Passivate(stopMessage = PoisonPill)
+      //context.parent ! ShardRegion.Passivate(stopMessage = PoisonPill)
+      self ! PoisonPill
     }
   }
 
   protected def distributeBuckets(firstRes: Result, secondRes: Result) = {
     // get hash join performer region
-    val hashJoinRegion = ClusterSharding.get(context.system).shardRegion("HashJoinPerformer")
-
+    //val hashJoinRegion = ClusterSharding.get(context.system).shardRegion("HashJoinPerformer")
+    val hashJoinRegion = context.actorOf(HashJoinPerformer.props, "HashJoinPerformer-" + UUID.randomUUID)
     performDistribution(hashJoinRegion, firstRes, secondRes)
   }
 
