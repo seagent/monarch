@@ -1,6 +1,7 @@
 package monitoring.actor
 
 import java.util
+import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.sharding.{ClusterSharding, ShardRegion}
@@ -64,7 +65,8 @@ class QueryFederator extends Actor with ActorLogging {
   }
 
   protected def processResult(receivedResult: Result): Unit = {
-    val bucketDistributorRegion = ClusterSharding.get(context.system).shardRegion("BucketDistributor")
+    //val bucketDistributorRegion = ClusterSharding.get(context.system).shardRegion("BucketDistributor")
+    val bucketDistributorRegion = context.actorOf(BucketDistributor.props, "BucketDistributor-" + UUID.randomUUID)
     processResult(bucketDistributorRegion, receivedResult)
   }
 

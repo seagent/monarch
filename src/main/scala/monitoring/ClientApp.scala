@@ -79,7 +79,8 @@ object ClientApp {
     val system = ActorSystem("Subscribing", config)
 
     val agent = system.actorOf(Agent.props, "Agent")
-    agent ! Register(GOOD_LOOKING_QUERY)
+    val client = system.actorOf(ClusterClient.props(ClusterClientSettings(system)), "client")
+    agent ! Register(GOOD_LOOKING_QUERY, client)
 
   }
 
