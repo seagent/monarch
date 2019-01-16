@@ -44,6 +44,7 @@ class HashJoinPerformer extends Actor with ActorLogging {
       //serialize result set
       val outputStream = new ByteArrayOutputStream
       ResultSetFormatter.outputAsJSON(outputStream, resultSet)
+      outputStream.close
       //send hash join result back to the sender
       sender ! Result(Json.parse(outputStream.toByteArray), resultSet.getResultVars.asScala, 1)
       //context.parent ! ShardRegion.Passivate(stopMessage = PoisonPill)

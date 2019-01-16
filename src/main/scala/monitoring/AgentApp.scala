@@ -34,15 +34,15 @@ object AgentApp {
 
     // Create an Akka system
     val system = ActorSystem("Subscribing", config)
-    //var index = 0
-    //for (orgData <- organizationDataList.asScala) {
-    //index += 1
     val client = system.actorOf(ClusterClient.props(ClusterClientSettings(system)), "client")
-    for (index <- 0 to COMPANY_COUNT) {
+    var index = 0
+    for (orgData <- organizationDataList.asScala) {
+      index += 1
+    //for (index <- 0 to COMPANY_COUNT) {
       val agent = system.actorOf(Agent.props, "Agent-" + index)
       //println(system.actorSelection("akka://Subscribing@172.17.0.1:2553/user/"+agent.path.name))
-      //val rawQuery = String.format(OrganizationConstants.STOCK_QUERY_TEMPLATE, orgData.getDbpediaCompany)
-      val rawQuery = String.format(OrganizationConstants.STOCK_QUERY_TEMPLATE, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + (index + 1))
+      val rawQuery = String.format(OrganizationConstants.STOCK_QUERY_TEMPLATE, orgData.getDbpediaCompany)
+      //val rawQuery = String.format(OrganizationConstants.STOCK_QUERY_TEMPLATE, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + (index + 1))
       val wodqaEngine = new WodqaEngine(true, false)
       val federatedQuery = wodqaEngine.federateQuery(voidModel, rawQuery, false)
       agent ! Register(federatedQuery, client)
