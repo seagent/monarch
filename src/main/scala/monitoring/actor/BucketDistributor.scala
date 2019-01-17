@@ -75,6 +75,7 @@ class BucketDistributor extends Actor with ActorLogging {
       notifyRegisteryList(result)
       //context.parent ! ShardRegion.Passivate(stopMessage = PoisonPill)
       self ! PoisonPill
+      //context.stop(self)
     }
   }
 

@@ -49,6 +49,7 @@ class HashJoinPerformer extends Actor with ActorLogging {
       sender ! Result(Json.parse(outputStream.toByteArray), resultSet.getResultVars.asScala, 1)
       //context.parent ! ShardRegion.Passivate(stopMessage = PoisonPill)
       self ! PoisonPill
+      //context.stop(self)
 
     case ShardRegion.Passivate =>
       log.info("Passivation message has been received from parent shard!")
