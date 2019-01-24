@@ -23,7 +23,7 @@ object HashJoinPerformer {
     case phj@PerformHashJoin(_, _) => (phj.hashCode % numberOfShards).toString
   }
 
-  def props: Props = Props(new HashJoinPerformer)
+  //def props: Props = Props(new HashJoinPerformer)
 }
 
 class HashJoinPerformer extends Actor with ActorLogging {
@@ -44,12 +44,9 @@ class HashJoinPerformer extends Actor with ActorLogging {
       //serialize result set
       val outputStream = new ByteArrayOutputStream
       ResultSetFormatter.outputAsJSON(outputStream, resultSet)
-      outputStream.close
       //send hash join result back to the sender
       sender ! Result(Json.parse(outputStream.toByteArray), resultSet.getResultVars.asScala, 1)
-      //context.parent ! ShardRegion.Passivate(stopMessage = PoisonPill)
-      self ! PoisonPill
-      //context.stop(self)
+      context.parent ! ShardRegion.Passivate(stopMessage = PoisonPill)
 
     case ShardRegion.Passivate =>
       log.info("Passivation message has been received from parent shard!")
