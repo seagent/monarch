@@ -8,6 +8,7 @@ object OrganizationConstants {
 
   val RESOURCE_PATH = "src/main/resources/"
   val VOID_PATH: String = RESOURCE_PATH + "void/"
+  val OWL_SAME_AS="http://www.w3.org/2002/07/owl#sameAs"
 
   def createStockQuery(companyURI: String, index: Int) = {
     s"""SELECT ?sameCompany$index ?count$index ?stock$index WHERE {
