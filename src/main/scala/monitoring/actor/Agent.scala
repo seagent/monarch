@@ -14,8 +14,7 @@ object Agent {
 
 class Agent extends Actor with ActorLogging {
   override def receive: Receive = {
-    case register@Register(_) =>
-      val client = context.actorOf(ClusterClient.props(ClusterClientSettings(context.system)), "client")
+    case register@Register(_, client) =>
       client ! ClusterClient.Send("/system/sharding/QueryFederator", new FederateQuery(register.query, "akka://Subscribing@155.223.25.4:2553/user/" + self.path.name), localAffinity = true)
     case result@Result(_, _, _) =>
       //ResultSetFormatter.out(result.toResultSet)

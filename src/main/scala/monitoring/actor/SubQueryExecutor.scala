@@ -3,7 +3,7 @@ package monitoring.actor
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.sharding.ShardRegion
 import com.hp.hpl.jena.query.QueryExecutionFactory
-import monitoring.main.{DbUtils, MonitoringUtils}
+import monitoring.main.{DbUtils, MonitoringUtils, OrganizationConstants}
 import monitoring.message.{ExecuteSubQuery, Result, ResultChange, ScheduledQuery}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -48,7 +48,10 @@ class SubQueryExecutor extends Actor with ActorLogging {
         val result = executeQuery(query, endpoint)
         queryResult = Some(result)
         sender ! queryResult.get
-        schedule(ScheduledQuery(esq))
+        //TODO: ilerde hashmap ten bakarak yapacaz ve endpointler ayrı graph olmalı
+        if (!query.contains(OrganizationConstants.OWL_SAME_AS)) {
+          schedule(ScheduledQuery(esq))
+        }
       }
 
     case sq@ScheduledQuery(esq) =>
@@ -62,7 +65,7 @@ class SubQueryExecutor extends Actor with ActorLogging {
   }
 
   protected def schedule(sq: ScheduledQuery) = {
-    context.system.scheduler.schedule(0.seconds, 1.minute, self, sq)
+    context.system.scheduler.schedule(2.minutes, 2.minutes, self, sq)
   }
 
   private def notifyRegisteryList(message: Any) = {

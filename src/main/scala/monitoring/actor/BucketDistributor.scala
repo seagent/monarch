@@ -2,7 +2,7 @@ package monitoring.actor
 
 import java.io.ByteArrayOutputStream
 
-import akka.actor.{Actor, ActorLogging, ActorRef, PoisonPill, Props}
+import akka.actor.{Actor, ActorLogging, ActorRef, PoisonPill}
 import akka.cluster.sharding.{ClusterSharding, ShardRegion}
 import com.hp.hpl.jena.query.{ResultSet, ResultSetFactory, ResultSetFormatter}
 import com.hp.hpl.jena.sparql.core.Var

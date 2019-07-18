@@ -3,20 +3,24 @@ package monitoring
 import java.net.{InetAddress, NetworkInterface}
 
 import akka.actor.ActorSystem
+import akka.cluster.client.{ClusterClient, ClusterClientSettings}
 import com.typesafe.config.ConfigFactory
 import monitoring.actor.Agent
-import monitoring.main.{OrganizationConstants, OrganizationData, OrganizationDataReader}
+import monitoring.main.{OrganizationConstants, OrganizationDataReader}
 import monitoring.message.Register
 import tr.edu.ege.seagent.wodqa.query.WodqaEngine
 import tr.edu.ege.seagent.wodqa.voiddocument.VoidModelConstructor
 
-import collection.JavaConverters._
+import scala.collection.JavaConverters._
 
 object AgentApp {
 
+  private val DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE = "http://dbpedia.org/resource/company-"
+  private val COMPANY_COUNT = 10000
+
   def main(args: Array[String]): Unit = {
     val organizationDataList = OrganizationDataReader.readOrganizationData("/organization_data.txt")
-    val voidModel = VoidModelConstructor.constructVOIDSpaceModel(System.getenv("HOME") +"/void")
+    val voidModel = VoidModelConstructor.constructVOIDSpaceModel(System.getenv("HOME") + "/void")
 
     var ipAddress = getIpAddress
     var port = "2553"
@@ -30,16 +34,20 @@ object AgentApp {
 
     // Create an Akka system
     val system = ActorSystem("Subscribing", config)
+    val client = system.actorOf(ClusterClient.props(ClusterClientSettings(system)), "client")
     var index = 0
-    for (orgData <- organizationDataList.asScala) {
-      index += 1
-      val agent = system.actorOf(Agent.props, "Agent-" + index)
-      //println(system.actorSelection("akka://Subscribing@172.17.0.1:2553/user/"+agent.path.name))
-      val rawQuery = String.format(OrganizationConstants.STOCK_QUERY_TEMPLATE, orgData.getDbpediaCompany)
-      val wodqaEngine = new WodqaEngine(true, false)
-      val federatedQuery = wodqaEngine.federateQuery(voidModel, rawQuery, false)
-      agent ! Register(federatedQuery)
-    }
+    for (outerIndex <- 1 to 2)
+      for (orgData <- organizationDataList.asScala) {
+        index += 1
+        //for (index <- 0 to COMPANY_COUNT) {
+        val agent = system.actorOf(Agent.props, "Agent-" + index)
+        //println(system.actorSelection("akka://Subscribing@172.17.0.1:2553/user/"+agent.path.name))
+        val rawQuery = OrganizationConstants.createStockQuery(orgData.getDbpediaCompany, outerIndex)
+        //val rawQuery = String.format(OrganizationConstants.STOCK_QUERY_TEMPLATE, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + (index + 1))
+        val wodqaEngine = new WodqaEngine(true, false)
+        val federatedQuery = wodqaEngine.federateQuery(voidModel, rawQuery, false)
+        agent ! Register(federatedQuery, client)
+      }
 
   }
 
