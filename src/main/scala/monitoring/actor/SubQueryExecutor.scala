@@ -65,7 +65,7 @@ class SubQueryExecutor extends Actor with ActorLogging {
   }
 
   protected def schedule(sq: ScheduledQuery) = {
-    context.system.scheduler.schedule(2.minutes, 2.minutes, self, sq)
+    context.system.scheduler.schedule(50.minutes, 50.minutes, self, sq)
   }
 
   private def notifyRegisteryList(message: Any) = {

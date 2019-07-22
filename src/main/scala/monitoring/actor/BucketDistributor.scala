@@ -18,7 +18,7 @@ import scala.collection.immutable.HashMap
 
 object BucketDistributor {
 
-  val splitCount = 500
+  val splitCount = 100
 
   val extractEntityId: ShardRegion.ExtractEntityId = {
     case dbs@DistributeBuckets(_, _) => (dbs.hashCode.toString, dbs)

@@ -37,7 +37,7 @@ object AgentApp {
     val client = system.actorOf(ClusterClient.props(ClusterClientSettings(system)), "client")
     var index = 0
     val wodqaEngine = new WodqaEngine(true, false)
-    for (outerIndex <- 1 to 10000) {
+    for (outerIndex <- 1 to 5000) {
       //for (orgData <- organizationDataList.asScala) {
       //index += 1
       //for (index <- 0 to COMPANY_COUNT) {
@@ -49,7 +49,7 @@ object AgentApp {
       agent ! Register(federatedQuery, client)
       //}
       if (outerIndex % 100 == 0) {
-        Thread.sleep(30000)
+        Thread.sleep(60000)
       }
     }
 
