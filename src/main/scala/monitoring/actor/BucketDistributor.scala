@@ -18,7 +18,7 @@ import scala.collection.immutable.HashMap
 
 object BucketDistributor {
 
-  val splitCount = 20
+  val splitCount = 500
 
   val extractEntityId: ShardRegion.ExtractEntityId = {
     case dbs@DistributeBuckets(_, _) => (dbs.hashCode.toString, dbs)
@@ -143,18 +143,18 @@ class BucketDistributor extends Actor with ActorLogging {
     bucketMap
   }
 
-  private def findIndex(multipleNode: MultipleNode) = {
-    var index = multipleNode.hashCode % BucketDistributor.splitCount
-    if (index < 0) index += BucketDistributor.splitCount
-    index
-  }
-
   def getMultipleNode(commonVars: Vector[String], binding: Binding): MultipleNode = {
     val multipleNode = new MultipleNode
     for (commonVar <- commonVars) {
       multipleNode.add(binding.get(Var.alloc(commonVar)))
     }
     multipleNode
+  }
+
+  private def findIndex(multipleNode: MultipleNode) = {
+    var index = multipleNode.hashCode % BucketDistributor.splitCount
+    if (index < 0) index += BucketDistributor.splitCount
+    index
   }
 
   private def insertResult(resultSet: ResultSet): Unit = {
