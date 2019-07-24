@@ -14,7 +14,7 @@ object SubQueryExecutor {
     case esq@ExecuteSubQuery(_, _) => (esq.hashCode.toString, esq)
   }
 
-  private val numberOfShards = 40
+  private val numberOfShards = 20
 
   val extractShardId: ShardRegion.ExtractShardId = {
     case esq@ExecuteSubQuery(_, _) => (esq.hashCode % numberOfShards).toString
@@ -65,7 +65,7 @@ class SubQueryExecutor extends Actor with ActorLogging {
   }
 
   protected def schedule(sq: ScheduledQuery) = {
-    context.system.scheduler.schedule(30.minutes, 30.minutes, self, sq)
+    context.system.scheduler.schedule(5.minutes, 5.minutes, self, sq)
   }
 
   private def notifyRegisteryList(message: Any) = {

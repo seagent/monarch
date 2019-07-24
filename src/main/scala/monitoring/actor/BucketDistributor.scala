@@ -24,7 +24,7 @@ object BucketDistributor {
     case dbs@DistributeBuckets(_, _) => (dbs.hashCode.toString, dbs)
   }
 
-  private val numberOfShards = 40
+  private val numberOfShards = 20
 
   val extractShardId: ShardRegion.ExtractShardId = {
     case dbs@DistributeBuckets(_, _) => (dbs.hashCode % numberOfShards).toString

@@ -17,7 +17,7 @@ object QueryFederator {
     case msg@FederateQuery(query, _) => (query.hashCode.toString, msg)
   }
 
-  private val numberOfShards = 40
+  private val numberOfShards = 20
 
   val extractShardId: ShardRegion.ExtractShardId = {
     case FederateQuery(query, _) => (query.hashCode % numberOfShards).toString

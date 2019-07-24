@@ -17,7 +17,7 @@ object HashJoinPerformer {
     case phj@PerformHashJoin(_, _) => (phj.hashCode.toString, phj)
   }
 
-  private val numberOfShards = 40
+  private val numberOfShards = 20
 
   val extractShardId: ShardRegion.ExtractShardId = {
     case phj@PerformHashJoin(_, _) => (phj.hashCode % numberOfShards).toString
