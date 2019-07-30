@@ -63,11 +63,6 @@ class QueryFederator extends Actor with ActorLogging {
       applyChange(rc)
   }
 
-  protected def processResult(receivedResult: Result): Unit = {
-    val bucketDistributorRegion = ClusterSharding.get(context.system).shardRegion("BucketDistributor")
-    processResult(bucketDistributorRegion, receivedResult)
-  }
-
   protected def federate(query: String): Unit = {
     val subQueryFederatorRegion = ClusterSharding.get(context.system).shardRegion("SubQueryFederator")
     federate(query, subQueryFederatorRegion)
@@ -78,11 +73,11 @@ class QueryFederator extends Actor with ActorLogging {
     distribute(federator, directedQueries)
   }
 
-  protected def processResult(bucketDistributor: ActorRef, receivedResult: Result): Unit = {
+  protected def processResult(receivedResult: Result): Unit = {
     if (receivedResult.key != 1) {
       resultMap += (receivedResult.key -> receivedResult)
     }
-    val matched = seekForMatch(bucketDistributor, receivedResult)
+    val matched = seekForMatch(receivedResult)
     if (!matched)
       results = results :+ receivedResult
 
@@ -99,13 +94,14 @@ class QueryFederator extends Actor with ActorLogging {
     }
   }
 
-  private def seekForMatch(distributor: ActorRef, receivedResult: Result): Boolean = {
+  private def seekForMatch(receivedResult: Result): Boolean = {
     for {
       result <- results
       if QueryManager.matchAnyVar(receivedResult.resultVars.asJava, result.resultVars.asJava)
     } {
       results = results.filterNot(res => res == result)
-      distributor ! DistributeBuckets(receivedResult, result)
+      val bucketDistributor =context.actorOf(BucketDistributor.props)
+      bucketDistributor ! DistributeBuckets(receivedResult, result)
       resultCount -= 1
       return true
     }

@@ -35,7 +35,7 @@ class MockQueryFederator extends QueryFederator {
 
   override protected def processResult(receivedResult: Result): Unit = {
     val bd = context.system.actorOf(Props(new MockBucketDistributor))
-    processResult(bd, receivedResult)
+    processResult(receivedResult)
   }
 
 }

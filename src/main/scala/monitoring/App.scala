@@ -85,7 +85,7 @@ object App {
       settings = ClusterShardingSettings(system),
       extractEntityId = SubQueryExecutor.extractEntityId,
       extractShardId = SubQueryExecutor.extractShardId)
-
+/*
     ClusterSharding(system).start(
       typeName = "BucketDistributor",
       entityProps = Props[BucketDistributor],
@@ -100,6 +100,6 @@ object App {
       extractEntityId = HashJoinPerformer.extractEntityId,
       extractShardId = HashJoinPerformer.extractShardId)
 
-
+*/
   }
 }

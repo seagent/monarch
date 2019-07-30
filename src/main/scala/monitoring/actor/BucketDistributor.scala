@@ -2,7 +2,7 @@ package monitoring.actor
 
 import java.io.ByteArrayOutputStream
 
-import akka.actor.{Actor, ActorLogging, ActorRef, PoisonPill}
+import akka.actor.{Actor, ActorLogging, ActorRef, PoisonPill, Props}
 import akka.cluster.sharding.{ClusterSharding, ShardRegion}
 import com.hp.hpl.jena.query.{ResultSet, ResultSetFactory, ResultSetFormatter}
 import com.hp.hpl.jena.sparql.core.Var
@@ -19,7 +19,7 @@ import scala.collection.immutable.HashMap
 object BucketDistributor {
 
   val splitCount = 100
-
+/*
   val extractEntityId: ShardRegion.ExtractEntityId = {
     case dbs@DistributeBuckets(_, _) => (dbs.hashCode.toString, dbs)
   }
@@ -29,8 +29,8 @@ object BucketDistributor {
   val extractShardId: ShardRegion.ExtractShardId = {
     case dbs@DistributeBuckets(_, _) => (dbs.hashCode % numberOfShards).toString
   }
-
-  //def props: Props = Props(new BucketDistributor)
+*/
+  def props: Props = Props(new BucketDistributor)
 }
 
 class BucketDistributor extends Actor with ActorLogging {
@@ -53,15 +53,15 @@ class BucketDistributor extends Actor with ActorLogging {
   override def receive: Receive = {
 
     case DistributeBuckets(firstRes, secondRes) =>
-      distributeBuckets(firstRes, secondRes)
+      performDistribution(firstRes, secondRes)
 
     case result@Result(_, _, _) =>
       handleJoinResult(result)
-
+/*
     case ShardRegion.Passivate =>
       log.info("Passivation message has been received from parent shard!")
       context.stop(self)
-
+*/
   }
 
   private def handleJoinResult(result: Result) = {
@@ -72,18 +72,12 @@ class BucketDistributor extends Actor with ActorLogging {
     if (bucketCount == 0) {
       val result = generateResult(resultSet.getResultVars.asScala, bindings)
       notifyRegisteryList(result)
-      context.parent ! ShardRegion.Passivate(stopMessage = PoisonPill)
+      context.stop(self)
+      //context.parent ! ShardRegion.Passivate(stopMessage = PoisonPill)
     }
   }
 
-  protected def distributeBuckets(firstRes: Result, secondRes: Result) = {
-    // get hash join performer region
-    val hashJoinRegion = ClusterSharding.get(context.system).shardRegion("HashJoinPerformer")
-
-    performDistribution(hashJoinRegion, firstRes, secondRes)
-  }
-
-  protected def performDistribution(hashJoinRegion: ActorRef, firstRes: Result, secondRes: Result): Unit = {
+  protected def performDistribution(firstRes: Result, secondRes: Result): Unit = {
     registerSender
 
     // find common vars between result sets
@@ -95,15 +89,16 @@ class BucketDistributor extends Actor with ActorLogging {
 
     // iterate over bucket iterators and perform hash join
     while (bucketIterFirst.hasNext && bucketIterSecond.hasNext) {
-      performHashJoin(hashJoinRegion, firstRes.resultVars, secondRes.resultVars, bucketIterFirst, bucketIterSecond)
+      performHashJoin(firstRes.resultVars, secondRes.resultVars, bucketIterFirst, bucketIterSecond)
     }
   }
 
-  def performHashJoin(hashJoinRegion: ActorRef, varsFirst: Seq[String], varsSecond: Seq[String], bucketIterFirst: Iterator[Vector[Binding]], bucketIterSecond: Iterator[Vector[Binding]]): Unit = {
+  def performHashJoin(varsFirst: Seq[String], varsSecond: Seq[String], bucketIterFirst: Iterator[Vector[Binding]], bucketIterSecond: Iterator[Vector[Binding]]): Unit = {
     bucketCount += 1
     val resultFirst = generateResult(varsFirst, bucketIterFirst.next)
     val resultSecond = generateResult(varsSecond, bucketIterSecond.next)
-    hashJoinRegion ! PerformHashJoin(resultFirst, resultSecond)
+    val hashJoinPerformer = context.actorOf(HashJoinPerformer.props)
+    hashJoinPerformer ! PerformHashJoin(resultFirst, resultSecond)
   }
 
   private def generateResult(vars: Seq[String], bucket: Vector[Binding]): Result = {
