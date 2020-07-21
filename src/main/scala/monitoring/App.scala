@@ -4,6 +4,7 @@ import java.net._
 
 import akka.actor.{ActorSystem, Props}
 import akka.cluster.client.ClusterClientReceptionist
+import akka.cluster.metrics.ClusterMetricsExtension
 import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings}
 import com.typesafe.config.ConfigFactory
 import monitoring.actor._
@@ -62,6 +63,8 @@ object App {
     // Create an Akka system
     val system = ActorSystem("Monitoring", config)
     // Create an actor that starts the sharding and sends random messages
+
+    ClusterMetricsExtension(system).subscribe(system.actorOf(MetricsListener.props))
 
     val federatorRegion = ClusterSharding(system).start(
       typeName = "QueryFederator",

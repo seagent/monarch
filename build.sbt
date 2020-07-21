@@ -24,7 +24,17 @@ libraryDependencies ++= Seq(
   "org.apache.jena" % "jena-arq" % jenaVersion,
   "org.apache.jena" % "jena-core" % jenaVersion,
   "com.typesafe.play" %% "play-json" % jsonVersion,
-  "net.debasishg" %% "redisclient" % "3.7"
-)
+  "net.debasishg" %% "redisclient" % "3.7",
+  "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
+  "io.kamon" % "sigar-loader" % "1.6.6-rev002"
+).map(_ exclude("org.slf4j", "*"))
+libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3"
+
+//libraryDependencies ++= Seq(
+//  "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.103",
+//  "com.typesafe.akka" %% "akka-persistence-cassandra-launcher" % "0.103" % Test
+//)
+
+//resolvers += Resolver.sonatypeRepo("snapshots")
 
 enablePlugins(JavaAppPackaging)

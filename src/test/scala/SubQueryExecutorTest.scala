@@ -63,7 +63,7 @@ class SubQueryExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) 
       TestUtils.write2File(changedJsonText, RESULT_FILE_NAME)
       // create expected message instance
       val rsChanged = ResultSetFactory.load(TestUtils.RESULT_FILE_NAME, ResultsFormat.FMT_RS_JSON)
-      val resultChangeMsgExp = ResultChange(createExpectedResult(rsChanged, TestUtils.RESULT_FILE_NAME))
+      val resultChangeMsgExp = ResultChange(createExpectedResult(rsChanged, TestUtils.RESULT_FILE_NAME),0)
       // check if received result is result change message
       expectMsg(10.seconds, resultChangeMsgExp)
       // kill actor instance

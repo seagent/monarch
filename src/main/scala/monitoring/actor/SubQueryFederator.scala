@@ -34,21 +34,21 @@ class SubQueryFederator extends Actor with ActorLogging {
   private var resultMap: HashMap[Int, Result] = HashMap.empty
   private var queryResult: Option[Result] = None
   private var federateSubQuery: Option[FederateSubQuery] = None
-
   override def preStart(): Unit = {
     super.preStart
     DbUtils.increaseActorCount
-    log.info("Actor count has been increased")
+    log.debug("Actor count has been increased")
   }
 
   override def postStop(): Unit = {
     super.postStop
     DbUtils.decreaseActorCount
-    log.info("Actor count has been decreased")
+    log.debug("Actor count has been decreased")
   }
 
   override def receive: Receive = {
     case fsq@FederateSubQuery(query, endpoints) =>
+      //log.info("Sender path: {}, self path {}",sender().path,self.path)
       federateSubQuery = Some(fsq)
       log.debug("Hash Code for Federate Sub Query: [{}], and Query Value: [{}], Endpoint Values: [{}]", fsq.hashCode, query, endpoints)
       if (queryResult.isDefined) {
@@ -66,12 +66,12 @@ class SubQueryFederator extends Actor with ActorLogging {
         queryResult = Some(finalRes)
         notifyRegisteryList(finalRes)
       }
-    case rc@ResultChange(_) =>
+    case rc@ResultChange(_,detectionTime) =>
       resultMap += (rc.result.key -> rc.result)
       val newRes = constructResult
       if (!queryResult.contains(newRes)) {
         log.info("A change has been detected for the sub-query [{}], and endpoints [{}]", federateSubQuery.get.query, federateSubQuery.get.endpoints)
-        notifyRegisteryList(ResultChange(newRes))
+        notifyRegisteryList(ResultChange(newRes,detectionTime))
       }
       queryResult = Some(newRes)
   }

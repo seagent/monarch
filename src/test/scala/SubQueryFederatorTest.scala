@@ -54,7 +54,7 @@ class SubQueryFederatorTest extends TestKit(ActorSystem("SubQueryFederatorTest")
       expectMsg(generateExpectedResult(fsq.hashCode))
       TestUtils.write2File(changedJsonText, TestUtils.IMDB_RESULT_FILE_NAME)
       // create expected message instance
-      val resultChangeMsgExp = ResultChange(generateExpectedResult(fsq.hashCode))
+      val resultChangeMsgExp = ResultChange(generateExpectedResult(fsq.hashCode),0)
       // check if received result is result change message
       expectMsg(10.seconds, resultChangeMsgExp)
       // kill actor instance

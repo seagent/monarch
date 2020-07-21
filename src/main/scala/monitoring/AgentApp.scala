@@ -6,17 +6,16 @@ import akka.actor.ActorSystem
 import akka.cluster.client.{ClusterClient, ClusterClientSettings}
 import com.typesafe.config.ConfigFactory
 import monitoring.actor.Agent
-import monitoring.main.{OrganizationConstants, OrganizationDataReader}
+import monitoring.main.OrganizationConstants
 import monitoring.message.Register
-import tr.edu.ege.seagent.wodqa.query.WodqaEngine
 import tr.edu.ege.seagent.wodqa.voiddocument.VoidModelConstructor
-
-import scala.collection.JavaConverters._
 
 object AgentApp {
 
   private val DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE = "http://dbpedia.org/resource/company-"
-  private val COMPANY_COUNT = 10000
+  private val COMPANY_COUNT = 500
+
+  private val BUNCH_COUNT = 250
 
   def main(args: Array[String]): Unit = {
     //val organizationDataList = OrganizationDataReader.readOrganizationData("/organization_data.txt")
@@ -36,19 +35,20 @@ object AgentApp {
     val system = ActorSystem("Subscribing", config)
     val client = system.actorOf(ClusterClient.props(ClusterClientSettings(system)), "client")
     var index = 0
-    val wodqaEngine = new WodqaEngine(true, false)
-    for (outerIndex <- 1 to 2500) {
+    //val wodqaEngine = new WodqaEngine(true, false)
+    for (outerIndex <- 1 to COMPANY_COUNT) {
       //for (orgData <- organizationDataList.asScala) {
       //index += 1
       //for (index <- 0 to COMPANY_COUNT) {
       val agent = system.actorOf(Agent.props, "Agent-" + outerIndex)
       //println(system.actorSelection("akka://Subscribing@172.17.0.1:2553/user/"+agent.path.name))
       //val rawQuery = OrganizationConstants.createStockQuery(orgData.getDbpediaCompany, outerIndex)
-      val rawQuery = String.format(OrganizationConstants.STOCK_QUERY_TEMPLATE, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + outerIndex)
-      val federatedQuery = wodqaEngine.federateQuery(voidModel, rawQuery, false)
+      //val rawQuery = String.format(OrganizationConstants.STOCK_QUERY_TEMPLATE, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + outerIndex)
+      //val federatedQuery = wodqaEngine.federateQuery(voidModel, rawQuery, false)
+      val federatedQuery = String.format(OrganizationConstants.FEDERATED_STOCK_QUERY_TEMPLATE, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + outerIndex)
       agent ! Register(federatedQuery, client)
       //}
-      if (outerIndex % 500 == 0) {
+      if (outerIndex % BUNCH_COUNT == 0) {
         Thread.sleep(60000)
       }
     }

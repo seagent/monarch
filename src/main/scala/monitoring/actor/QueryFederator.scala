@@ -32,6 +32,7 @@ class QueryFederator extends Actor with ActorLogging {
   private var resultMap: HashMap[Int, Result] = HashMap.empty
   private var queryResult: Option[Result] = None
   private var federateQuery: Option[FederateQuery] = None
+  private var startTimeInMillis = 0L;
 
   override def preStart(): Unit = {
     super.preStart
@@ -47,6 +48,8 @@ class QueryFederator extends Actor with ActorLogging {
 
   override def receive: Receive = {
     case fq@FederateQuery(query, senderPath) =>
+      //log.info("Sender path: {}, self path {}",sender().path,self.path)
+      startTimeInMillis = System.currentTimeMillis()
       federateQuery = Some(fq)
       DbUtils.incrementQueryCount(fq)
       log.debug("Hash Code for Federate Query: [{}], and Query Value: [{}]", fq.hashCode, query)
@@ -59,7 +62,7 @@ class QueryFederator extends Actor with ActorLogging {
     case receivedResult@Result(_, _, _) =>
       // get hash join performer region
       processResult(receivedResult)
-    case rc@ResultChange(_) =>
+    case rc@ResultChange(_, _) =>
       applyChange(rc)
   }
 
@@ -86,8 +89,9 @@ class QueryFederator extends Actor with ActorLogging {
       if (queryResult.isEmpty) {
         log.info("Result has been constructed for the federated query [{}]", federateQuery.get.query)
         notifyRegisteryList(receivedResult)
+        log.info("Federated query has been performed in: [{}] milliseconds", System.currentTimeMillis() - startTimeInMillis)
       } else if (!queryResult.contains(receivedResult)) {
-        log.info("A result change has been detected for the federated query [{}]", federateQuery.get.query)
+        log.info("A result change has been detected for the federated query [{}], and notified in [{}] milliseconds", federateQuery.get.query, System.currentTimeMillis() - startTimeInMillis)
         notifyRegisteryList(receivedResult)
       }
       queryResult = Some(receivedResult)
@@ -100,7 +104,7 @@ class QueryFederator extends Actor with ActorLogging {
       if QueryManager.matchAnyVar(receivedResult.resultVars.asJava, result.resultVars.asJava)
     } {
       results = results.filterNot(res => res == result)
-      val bucketDistributor =context.actorOf(BucketDistributor.props)
+      val bucketDistributor = context.actorOf(BucketDistributor.props)
       bucketDistributor ! DistributeBuckets(receivedResult, result)
       resultCount -= 1
       return true
@@ -112,6 +116,7 @@ class QueryFederator extends Actor with ActorLogging {
     resultCount = resultMap.size - 1
     resultMap += (resultChange.result.key -> resultChange.result)
     results = resultMap.values.toVector.filterNot(res => res == resultChange.result)
+    startTimeInMillis = resultChange.detectionTime
     self ! resultChange.result
   }
 

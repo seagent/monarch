@@ -29,17 +29,18 @@ class SubQueryExecutor extends Actor with ActorLogging {
   override def preStart(): Unit = {
     super.preStart
     DbUtils.increaseActorCount
-    log.info("Actor count has been increased")
+    log.debug("Actor count has been increased")
   }
 
   override def postStop(): Unit = {
     super.postStop
     DbUtils.decreaseActorCount
-    log.info("Actor count has been decreased")
+    log.debug("Actor count has been decreased")
   }
 
   override def receive: Receive = {
     case esq@ExecuteSubQuery(query, endpoint) =>
+      //log.info("Sender path: {}, self path {}",sender().path,self.path)
       log.debug("Hash Code for Execute Sub Query: [{}], and Query Value: [{}], Endpoint Value: [{}]", esq.hashCode, query, endpoint)
       registerSender
       if (queryResult.isDefined) {
@@ -60,7 +61,7 @@ class SubQueryExecutor extends Actor with ActorLogging {
       if (!queryResult.contains(result)) {
         log.info("A change has been detected for the sub-query [{}], and endpoint [{}]", esq.query, esq.endpoint)
         queryResult = Some(result)
-        notifyRegisteryList(ResultChange(result))
+        notifyRegisteryList(ResultChange(result,System.currentTimeMillis()))
       }
   }
 

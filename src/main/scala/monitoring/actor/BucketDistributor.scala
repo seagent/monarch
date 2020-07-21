@@ -33,7 +33,7 @@ object BucketDistributor {
   def props: Props = Props(new BucketDistributor)
 }
 
-class BucketDistributor extends Actor with ActorLogging {
+class   BucketDistributor extends Actor with ActorLogging {
 
   private var bucketCount = 0
   private var bindings: Vector[Binding] = Vector.empty

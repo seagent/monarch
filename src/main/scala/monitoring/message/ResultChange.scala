@@ -2,7 +2,7 @@ package monitoring.message
 
 import play.api.libs.json.Json
 
-case class ResultChange(result: Result)
+case class ResultChange(result: Result, detectionTime: Long)
 
 object ResultChange {
 
