@@ -6,7 +6,7 @@ scalaVersion := "2.12.6"
 
 val jenaVersion = "2.11.0"
 
-val akkaVersion = "2.5.13"
+val akkaVersion = "2.5.31"
 
 val gJsonVersion = "2.8.2"
 

@@ -13,13 +13,13 @@ import tr.edu.ege.seagent.wodqa.voiddocument.VoidModelConstructor
 object AgentApp {
 
   private val DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE = "http://dbpedia.org/resource/company-"
-  private val COMPANY_COUNT = 500
+  private val COMPANY_COUNT = 3500
 
-  private val BUNCH_COUNT = 250
+  private val BUNCH_COUNT = 350
 
   def main(args: Array[String]): Unit = {
     //val organizationDataList = OrganizationDataReader.readOrganizationData("/organization_data.txt")
-    val voidModel = VoidModelConstructor.constructVOIDSpaceModel(System.getenv("HOME") + "/void")
+    //val voidModel = VoidModelConstructor.constructVOIDSpaceModel(System.getenv("HOME") + "/void")
 
     var ipAddress = getIpAddress
     var port = "2553"
