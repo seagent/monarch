@@ -1,5 +1,5 @@
 import TestUtils.RESULT_FILE_NAME
-import actor.{MockQueryFederator, MockSubQueryExecutor, MockSubQueryFederator}
+import actor.{MockQueryDistributor, MockSubQueryExecutor, MockSubQueryDistributor}
 import akka.actor.{ActorSystem, PoisonPill, Props}
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import com.hp.hpl.jena.query.{ResultSet, ResultSetFactory}
@@ -12,7 +12,7 @@ import play.api.libs.json.Json
 
 import scala.concurrent.duration._
 
-class QueryFederatorTest extends TestKit(ActorSystem("QueryFederatorTest")) with ImplicitSender
+class QueryDistributorTest extends TestKit(ActorSystem("QueryDistributorTest")) with ImplicitSender
   with WordSpecLike with Matchers with BeforeAndAfterAll {
 
   override def afterAll {
@@ -28,7 +28,7 @@ class QueryFederatorTest extends TestKit(ActorSystem("QueryFederatorTest")) with
       val probe = TestProbe()
 
       // create a new actor
-      val qf = system.actorOf(Props(new MockQueryFederator))
+      val qf = system.actorOf(Props(new MockQueryDistributor))
       probe watch qf
       // send execute sub query message
       qf ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY, ""+qf.path.toString)
@@ -47,7 +47,7 @@ class QueryFederatorTest extends TestKit(ActorSystem("QueryFederatorTest")) with
       val probe = TestProbe()
 
       // create a new actor
-      val qf = system.actorOf(Props(new MockQueryFederator))
+      val qf = system.actorOf(Props(new MockQueryDistributor))
       probe watch qf
       // send execute sub query message
       qf ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY, qf.path.toString)
@@ -72,7 +72,7 @@ class QueryFederatorTest extends TestKit(ActorSystem("QueryFederatorTest")) with
       val probe = TestProbe()
 
       // create a new actor
-      val qf = system.actorOf(Props(new MockQueryFederator))
+      val qf = system.actorOf(Props(new MockQueryDistributor))
       probe watch qf
       // send execute sub query message
       qf ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY, qf.path.toString)

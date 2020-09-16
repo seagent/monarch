@@ -1,10 +1,10 @@
-import actor.MockBucketDistributor
+import actor.MockParallelJoinManager
 import akka.actor.{ActorSystem, PoisonPill, Props}
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import monitoring.message.DistributeBuckets
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
-class BucketDistributorTest extends TestKit(ActorSystem("HashJoinPerformerTest")) with ImplicitSender
+class ParallelJoinManagerTest extends TestKit(ActorSystem("HashJoinPerformerTest")) with ImplicitSender
   with WordSpecLike with Matchers with BeforeAndAfterAll {
 
   override def afterAll {
@@ -18,7 +18,7 @@ class BucketDistributorTest extends TestKit(ActorSystem("HashJoinPerformerTest")
       val probe = TestProbe()
 
       // create a new actor
-      val bd = system.actorOf(Props(new MockBucketDistributor))
+      val bd = system.actorOf(Props(new MockParallelJoinManager))
       // watch created actor
       probe watch bd
       // import first result

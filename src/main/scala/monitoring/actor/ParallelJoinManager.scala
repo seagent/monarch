@@ -16,7 +16,7 @@ import tr.edu.ege.seagent.boundarq.filterbound.MultipleNode
 import scala.collection.JavaConverters._
 import scala.collection.immutable.HashMap
 
-object BucketDistributor {
+object ParallelJoinManager {
 
   val splitCount = 100
 /*
@@ -30,10 +30,10 @@ object BucketDistributor {
     case dbs@DistributeBuckets(_, _) => (dbs.hashCode % numberOfShards).toString
   }
 */
-  def props: Props = Props(new BucketDistributor)
+  def props: Props = Props(new ParallelJoinManager)
 }
 
-class   BucketDistributor extends Actor with ActorLogging {
+class   ParallelJoinManager extends Actor with ActorLogging {
 
   private var bucketCount = 0
   private var bindings: Vector[Binding] = Vector.empty
@@ -122,7 +122,7 @@ class   BucketDistributor extends Actor with ActorLogging {
   def generateBucketMap(resultSet: ResultSet, commonVars: Vector[String]): HashMap[Int, Vector[Binding]] = {
     var bucketMap: HashMap[Int, Vector[Binding]] = HashMap.empty
 
-    for (i <- 0 until BucketDistributor.splitCount) {
+    for (i <- 0 until ParallelJoinManager.splitCount) {
       bucketMap += (i -> Vector.empty[Binding])
     }
 
@@ -147,8 +147,8 @@ class   BucketDistributor extends Actor with ActorLogging {
   }
 
   private def findIndex(multipleNode: MultipleNode) = {
-    var index = multipleNode.hashCode % BucketDistributor.splitCount
-    if (index < 0) index += BucketDistributor.splitCount
+    var index = multipleNode.hashCode % ParallelJoinManager.splitCount
+    if (index < 0) index += ParallelJoinManager.splitCount
     index
   }
 

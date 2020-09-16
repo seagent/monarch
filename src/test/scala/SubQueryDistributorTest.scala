@@ -1,4 +1,4 @@
-import actor.MockSubQueryFederator
+import actor.MockSubQueryDistributor
 import akka.actor.{ActorSystem, PoisonPill, Props}
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import com.hp.hpl.jena.query.{ResultSet, ResultSetFactory}
@@ -13,20 +13,20 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import scala.collection.JavaConverters._
 import scala.concurrent.duration._
 
-class SubQueryFederatorTest extends TestKit(ActorSystem("SubQueryFederatorTest")) with ImplicitSender
+class SubQueryDistributorTest extends TestKit(ActorSystem("SubQueryDistributorTest")) with ImplicitSender
   with WordSpecLike with Matchers with BeforeAndAfterAll {
 
   override def afterAll {
     TestKit.shutdownActorSystem(system)
   }
 
-  "A SubQueryFederator actor" must {
+  "A SubQueryDistributor actor" must {
 
     val fsq = FederateSubQuery(TestUtils.PERSON_SELECT_QUERY, Vector(TestUtils.DBPEDIA_RESULT_FILE_NAME, TestUtils.IMDB_RESULT_FILE_NAME))
     "federate a sub query and return result to the sender" in {
       val probe = TestProbe()
       // create a new actor
-      val sqf = system.actorOf(Props(new MockSubQueryFederator))
+      val sqf = system.actorOf(Props(new MockSubQueryDistributor))
       probe watch sqf
       sqf ! fsq
 
@@ -47,7 +47,7 @@ class SubQueryFederatorTest extends TestKit(ActorSystem("SubQueryFederatorTest")
       val changedJsonText = TestUtils.changeResultFile(TestUtils.IMDB_RESULT_FILE_NAME)
 
       // create a new actor
-      val sqf = system.actorOf(Props(new MockSubQueryFederator))
+      val sqf = system.actorOf(Props(new MockSubQueryDistributor))
       probe watch sqf
       sqf ! fsq
       // check if received message is the expected one
@@ -69,7 +69,7 @@ class SubQueryFederatorTest extends TestKit(ActorSystem("SubQueryFederatorTest")
       TestUtils.changeFileInto(TestUtils.ACTUAL_DBPEDIA_RESULT_FILE_NAME, TestUtils.DBPEDIA_RESULT_FILE_NAME)
       TestUtils.changeFileInto(TestUtils.ACTUAL_IMDB_RESULT_FILE_NAME, TestUtils.IMDB_RESULT_FILE_NAME)
       // create a new actor
-      val sqf = system.actorOf(Props(new MockSubQueryFederator))
+      val sqf = system.actorOf(Props(new MockSubQueryDistributor))
       probe watch sqf
       sqf ! fsq
 

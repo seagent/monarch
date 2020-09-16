@@ -67,20 +67,20 @@ object App {
     ClusterMetricsExtension(system).subscribe(system.actorOf(MetricsListener.props))
 
     val federatorRegion = ClusterSharding(system).start(
-      typeName = "QueryFederator",
-      entityProps = Props[QueryFederator],
+      typeName = "QueryDistributor",
+      entityProps = Props[QueryDistributor],
       settings = ClusterShardingSettings(system),
-      extractEntityId = QueryFederator.extractEntityId,
-      extractShardId = QueryFederator.extractShardId)
+      extractEntityId = QueryDistributor.extractEntityId,
+      extractShardId = QueryDistributor.extractShardId)
 
     ClusterClientReceptionist(system).registerService(federatorRegion)
 
     ClusterSharding(system).start(
-      typeName = "SubQueryFederator",
-      entityProps = Props[SubQueryFederator],
+      typeName = "SubQueryDistributor",
+      entityProps = Props[SubQueryDistributor],
       settings = ClusterShardingSettings(system),
-      extractEntityId = SubQueryFederator.extractEntityId,
-      extractShardId = SubQueryFederator.extractShardId)
+      extractEntityId = SubQueryDistributor.extractEntityId,
+      extractShardId = SubQueryDistributor.extractShardId)
 
     ClusterSharding(system).start(
       typeName = "SubQueryExecutor",
@@ -90,11 +90,11 @@ object App {
       extractShardId = SubQueryExecutor.extractShardId)
 /*
     ClusterSharding(system).start(
-      typeName = "BucketDistributor",
-      entityProps = Props[BucketDistributor],
+      typeName = "ParallelJoinManager",
+      entityProps = Props[ParallelJoinManager],
       settings = ClusterShardingSettings(system),
-      extractEntityId = BucketDistributor.extractEntityId,
-      extractShardId = BucketDistributor.extractShardId)
+      extractEntityId = ParallelJoinManager.extractEntityId,
+      extractShardId = ParallelJoinManager.extractShardId)
 
     ClusterSharding(system).start(
       typeName = "HashJoinPerformer",

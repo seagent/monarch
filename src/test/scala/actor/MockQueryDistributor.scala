@@ -4,19 +4,19 @@ import java.util
 
 import akka.actor.{ActorRef, Props}
 import main.DirectedQuery
-import monitoring.actor.QueryFederator
+import monitoring.actor.QueryDistributor
 import monitoring.message.{FederateSubQuery, Result}
 
 import scala.collection.JavaConverters._
 
-class MockQueryFederator extends QueryFederator {
+class MockQueryDistributor extends QueryDistributor {
 
   private val GEO_JOIN_RESULT_NAME = "src/test/files/geo-join.json"
   private val LMDB_JOIN_RESULT_NAME = "src/test/files/lmdb-join.json"
   private val DBPEDIA_JOIN_RESULT_NAME = "src/test/files/dbpedia-join-1.json"
 
   override protected def federate(query: String): Unit = {
-    //val sqf = context.system.actorOf(Props(new MockSubQueryFederator))
+    //val sqf = context.system.actorOf(Props(new MockSubQueryDistributor))
     federate(query, ActorRef.noSender)
   }
 
@@ -29,12 +29,12 @@ class MockQueryFederator extends QueryFederator {
   }
 
   override protected def directToSubQueryFederator(subQueryFederatorRegion: ActorRef, directedQuery: DirectedQuery): Unit = {
-    val sqf = context.system.actorOf(Props(new MockSubQueryFederator))
+    val sqf = context.system.actorOf(Props(new MockSubQueryDistributor))
     sqf ! FederateSubQuery(directedQuery.getQuery, directedQuery.getEndpoints.asScala)
   }
 
   override protected def processResult(receivedResult: Result): Unit = {
-    val bd = context.system.actorOf(Props(new MockBucketDistributor))
+    val bd = context.system.actorOf(Props(new MockParallelJoinManager))
     processResult(receivedResult)
   }
 

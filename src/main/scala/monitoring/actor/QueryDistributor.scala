@@ -12,7 +12,7 @@ import monitoring.message._
 import scala.collection.JavaConverters._
 import scala.collection.immutable.{HashMap, Queue}
 
-object QueryFederator {
+object QueryDistributor {
   val extractEntityId: ShardRegion.ExtractEntityId = {
     case msg@FederateQuery(query, _) => (query.hashCode.toString, msg)
   }
@@ -24,7 +24,7 @@ object QueryFederator {
   }
 }
 
-class QueryFederator extends Actor with ActorLogging {
+class QueryDistributor extends Actor with ActorLogging {
 
   private var resultCount = 0
   private var results: Vector[Result] = Vector.empty
@@ -67,7 +67,7 @@ class QueryFederator extends Actor with ActorLogging {
   }
 
   protected def federate(query: String): Unit = {
-    val subQueryFederatorRegion = ClusterSharding.get(context.system).shardRegion("SubQueryFederator")
+    val subQueryFederatorRegion = ClusterSharding.get(context.system).shardRegion("SubQueryDistributor")
     federate(query, subQueryFederatorRegion)
   }
 
@@ -104,7 +104,7 @@ class QueryFederator extends Actor with ActorLogging {
       if QueryManager.matchAnyVar(receivedResult.resultVars.asJava, result.resultVars.asJava)
     } {
       results = results.filterNot(res => res == result)
-      val bucketDistributor = context.actorOf(BucketDistributor.props)
+      val bucketDistributor = context.actorOf(ParallelJoinManager.props)
       bucketDistributor ! DistributeBuckets(receivedResult, result)
       resultCount -= 1
       return true

@@ -15,7 +15,7 @@ import scala.collection.JavaConverters._
 import scala.collection.immutable.HashMap
 
 
-object SubQueryFederator {
+object SubQueryDistributor {
   val extractEntityId: ShardRegion.ExtractEntityId = {
     case msg@FederateSubQuery(query, _) => (query.hashCode.toString, msg)
   }
@@ -27,7 +27,7 @@ object SubQueryFederator {
   }
 }
 
-class SubQueryFederator extends Actor with ActorLogging {
+class SubQueryDistributor extends Actor with ActorLogging {
 
   private var registeryList: Vector[ActorRef] = Vector.empty
   private var resultCount = 0
