@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY j.0 "http://rdfs.org/ns/void#" >
+    <!ENTITY dady "http://purl.org/NET/dady#" >
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+]>
+
+<rdf:RDF
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:void="http://rdfs.org/ns/void#"
+	xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+	xmlns:sparql-service-description="http://www.w3.org/ns/sparql-service-description#"
+	xmlns:owl="http://www.w3.org/2002/07/owl#"
+	xmlns:j.0="http://rdfs.org/ns/void#"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+	xmlns:dady="http://purl.org/NET/dady#"
+	xmlns:linked-data="http://purl.org/linked-data/api/vocab#">
+
+<rdf:Description rdf:about="http://stockmarket.com">
+	
+	<rdf:type rdf:resource="http://rdfs.org/ns/void#Dataset"/>
+	
+	<void:uriSpace>http://stockmarket.com/elements/</void:uriSpace>
+	<void:exampleResource rdf:resource="http://stockmarket.com/elements/stockValue"/>
+	 <j.0:sparqlEndpoint rdf:datatype="&xsd;string">http://155.223.25.2:8890/sparql</j.0:sparqlEndpoint>
+       
+        <j.0:vocabulary>http://data.nytimes.com/</j.0:vocabulary>
+	<j.0:vocabulary>http://stockmarket.com/elements/</j.0:vocabulary>
+       
+        <dady:dynamics rdf:resource="http://purl.org/NET/modifiedDady#HighFrequentUpdates"/>
+</rdf:Description>
+
+
+</rdf:RDF>

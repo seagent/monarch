@@ -18,8 +18,8 @@ object AgentApp {
   private val BUNCH_COUNT = 350
 
   def main(args: Array[String]): Unit = {
-    //val organizationDataList = OrganizationDataReader.readOrganizationData("/organization_data.txt")
-    //val voidModel = VoidModelConstructor.constructVOIDSpaceModel(System.getenv("HOME") + "/void")
+    //val organizationDataList = OrganizationDataReader.readOrganizationData("/organization_data.txt") "/home/burak/Development/monitoring-environment/resources/void"
+    //val voidModel = VoidModelConstructor.constructVOIDSpaceModel(System.getProperty("user.dir") + "/src/main/resources/void")
 
     var ipAddress = getIpAddress
     var port = "2553"
