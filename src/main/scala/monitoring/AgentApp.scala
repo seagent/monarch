@@ -45,7 +45,7 @@ object AgentApp {
       //val rawQuery = OrganizationConstants.createStockQuery(orgData.getDbpediaCompany, outerIndex)
       //val rawQuery = String.format(OrganizationConstants.STOCK_QUERY_TEMPLATE, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + outerIndex)
       //val federatedQuery = wodqaEngine.federateQuery(voidModel, rawQuery, false)
-      val federatedQuery = String.format(OrganizationConstants.FEDERATED_STOCK_QUERY_TEMPLATE, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + outerIndex)
+      val federatedQuery = String.format(OrganizationConstants.FEDERATED_FILTERED_TYPED_STOCK_QUERY_TEMPLATE, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + outerIndex)
       agent ! Register(federatedQuery, client)
       //}
       if (outerIndex % BUNCH_COUNT == 0) {
