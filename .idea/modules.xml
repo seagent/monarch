@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/MonARCh.iml" filepath="$PROJECT_DIR$/.idea/modules/MonARCh.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/QueryMonitor.iml" filepath="$PROJECT_DIR$/.idea/modules/QueryMonitor.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/QueryMonitor-build.iml" filepath="$PROJECT_DIR$/.idea/modules/QueryMonitor-build.iml" />
     </modules>
   </component>
