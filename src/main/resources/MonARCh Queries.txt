@@ -1,0 +1,163 @@
+NYTIMES Query
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX nytimes: <http://data.nytimes.com/elements/>
+select (count(*) as ?count) where {?s rdf:type nytimes:Company} 
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+NYTIMES Query Generic (Result Size: 15441)
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX nytimes: <http://data.nytimes.com/elements/>
+select (count(*) as ?count) where {?s nytimes:associated_article_count ?articleCount.}
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+
+NYTIMES FILTER Query
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX nytimes: <http://data.nytimes.com/elements/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+select (count(*) as ?count) where {?nytCompany rdf:type nytimes:Company. ?nytCompany nytimes:reputation ?reputation. FILTER ((?reputation='Very High'^^xsd:string)||(?reputation='High'^^xsd:string)||(?reputation='Medium'^^xsd:string)||(?reputation='Low'^^xsd:string))}
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+VALUES NYTIMES Query
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX nytimes: <http://data.nytimes.com/elements/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+select (count(*) as ?count) where {?nytCompany rdf:type nytimes:Company. ?nytCompany nytimes:reputation ?reputation. VALUES (?reputation) {('Very High'^^xsd:string)('High'^^xsd:string)('Medium'^^xsd:string)('Low'^^xsd:string)}}
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+
+
+DBPEDIA FILTER QUERY
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX dbpedia: <http://dbpedia.org/resource/>
+select (count(*) as ?count) where {?dbpediaCompany rdf:type dbo:Company.
+				 ?dbpediaCompany dbo:numberOfStaff ?staffCount.
+				 ?dbpediaCompany owl:sameAs ?nytCompany. FILTER (strstarts(str(?dbpediaCompany), 'http://dbpedia.org/resource/company-')&&(?staffCount>10000&&?staffCount<=100000)) }
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+
+DBPEDIA QUERY Generic (Result Size: 36251)
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX dbpedia: <http://dbpedia.org/resource/>
+select (count(*) as ?count) where {?s rdf:type dbo:Company. }
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+
+DBPEDIA QUERY
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX dbpedia: <http://dbpedia.org/resource/>
+select (count(*) as ?count) where {?s rdf:type dbo:Company. FILTER (strstarts(str(?s), 'http://dbpedia.org/resource/company-')) }
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+
+STOCKMARKET QUERY Generic (Result Size: 5000)
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX stockmarket: <http://stockmarket.com/elements/>
+select (count(*) as ?count) where {?nytCompany rdf:type stockmarket:Company}
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+
+ STOCKMARKET FILTER QUERY
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX stockmarket: <http://stockmarket.com/elements/>
+select (count(*) as ?count) where {
+	?nytCompany rdf:type stockmarket:Company.
+	?nytCompany stockmarket:market ?market.
+	?nytCompany stockmarket:currency ?currency. FILTER ((?market='NYSE'^^xsd:string)||(?market='TSE'^^xsd:string)||(?market='FWB'^^xsd:string)||(?market='LSE'^^xsd:string))} 
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+
+ STOCKMARKET VALUES QUERY
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX stockmarket: <http://stockmarket.com/elements/>
+select (count(*) as ?count) where {
+	?nytCompany rdf:type stockmarket:Company.
+	?nytCompany stockmarket:market ?market.
+	?nytCompany stockmarket:currency ?currency. VALUES (?market) {('NYSE'^^xsd:string)('TSE'^^xsd:string)('FWB'^^xsd:string)('LSE'^^xsd:string)}} 
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+
+
+GENERIC FEDERATED QUERY
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX dbpedia: <http://dbpedia.org/resource/>
+PREFIX nytimes: <http://data.nytimes.com/elements/>
+PREFIX stockmarket: <http://stockmarket.com/elements/>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+Select * where {
+service <http://155.223.25.4:8890/dbpedia/sparql> {
+	?dbpediaCompany rdf:type dbo:Company.
+	?dbpediaCompany dbo:numberOfStaff ?staffCount.
+	?dbpediaCompany owl:sameAs ?nytCompany.}
+service <http://155.223.25.1:8890/nytimes/sparql> {
+	?nytCompany rdf:type nytimes:Company.
+	?nytCompany nytimes:reputation ?reputation.}
+service <http://155.223.25.2:8890/stockmarket/sparql> {
+	?nytCompany rdf:type stockmarket:Company.
+	?nytCompany stockmarket:market ?market.
+	?nytCompany stockmarket:currency ?currency.}
+}
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+
+NARROWED SUBSET FEDERATED QUERY-1
+——————————————————————————————
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX dbpedia: <http://dbpedia.org/resource/>
+PREFIX nytimes: <http://data.nytimes.com/elements/>
+PREFIX stockmarket: <http://stockmarket.com/elements/>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+Select * where {
+service <http://155.223.25.4:8890/dbpedia/sparql> {
+	?dbpediaCompany rdf:type dbo:Company.
+	?dbpediaCompany dbo:numberOfStaff ?staffCount.
+	?dbpediaCompany owl:sameAs ?nytCompany. FILTER (strstarts(str(?dbpediaCompany), 'http://dbpedia.org/resource/company-')&&(?staffCount>10000&&?staffCount<=100000))}
+service <http://155.223.25.1:8890/nytimes/sparql> {
+	?nytCompany rdf:type nytimes:Company.
+	?nytCompany nytimes:reputation ?reputation. VALUES (?reputation) {('Very High'^^xsd:string)('High'^^xsd:string)('Medium'^^xsd:string)('Low'^^xsd:string)}}
+service <http://155.223.25.2:8890/stockmarket/sparql> {
+	?nytCompany rdf:type stockmarket:Company.
+	?nytCompany stockmarket:market ?market.
+	?nytCompany stockmarket:currency ?currency. VALUES (?market) {('NYSE'^^xsd:string)('TSE'^^xsd:string)('FWB'^^xsd:string)('LSE'^^xsd:string)}}
+}
+———————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
