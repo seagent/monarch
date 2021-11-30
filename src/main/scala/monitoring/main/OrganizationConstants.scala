@@ -56,4 +56,68 @@ object OrganizationConstants {
       "|}SERVICE <http://155.223.25.2:8890/stockmarket/sparql> {"
       "|?nytCompany$index <http://stockmarket.com/elements/stockPrice> ?stockPrice$index. }}""".stripMargin
   }
+
+  def generateFederatedQuery(selectionDBP: String, selectionNYT: String,selectionSTK: String): String={
+
+    var (lowerBound,upperBound,reputationValues,marketValues)=(0,999999,"","")
+    var filterDBpedia=s"FILTER (strstarts(str(?dbpediaCompany), 'http://dbpedia.org/resource/company-')&&(?staffCount>$lowerBound&&?staffCount<=$upperBound))"
+    var valuesNytimes=s"VALUES (?reputation) {$reputationValues}"
+    var valuesStockmarket=s"VALUES (?market) {$marketValues}"
+
+    selectionDBP match {
+      case "ALL" => filterDBpedia=""
+      case "4500" => lowerBound=10000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
+      case "4000" => lowerBound=20000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
+      case "3500" => lowerBound=30000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
+      case "3000" => lowerBound=40000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
+      case "2500" => lowerBound=50000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
+      case "2000" => lowerBound=60000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
+      case "1500" => lowerBound=70000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
+      case "1000" => lowerBound=80000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
+      case "500" => lowerBound=90000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
+    }
+
+    selectionNYT match {
+      case "ALL" => valuesNytimes=""
+      case "4000" => reputationValues="('Very High'^^xsd:string)('High'^^xsd:string)('Medium'^^xsd:string)('Low'^^xsd:string)"; valuesNytimes.stripMargin
+      case "3000" => reputationValues="('Very High'^^xsd:string)('High'^^xsd:string)('Medium'^^xsd:string)"; valuesNytimes.stripMargin
+      case "2000" => reputationValues="('Very High'^^xsd:string)('High'^^xsd:string)"; valuesNytimes.stripMargin
+      case "1000" => reputationValues="('Very High'^^xsd:string)"; valuesNytimes.stripMargin
+    }
+
+    selectionSTK match {
+      case "ALL" => valuesStockmarket=""
+      case "4000" => marketValues="('NYSE'^^xsd:string)('TSE'^^xsd:string)('FWB'^^xsd:string)('LSE'^^xsd:string)"; valuesStockmarket.stripMargin
+      case "3000" => marketValues="('NYSE'^^xsd:string)('TSE'^^xsd:string)('FWB'^^xsd:string)"; valuesStockmarket.stripMargin
+      case "2000" => marketValues="('NYSE'^^xsd:string)('TSE'^^xsd:string)"; valuesStockmarket.stripMargin
+      case "1000" => marketValues="('NYSE'^^xsd:string)"; valuesStockmarket.stripMargin
+    }
+
+    val templateQuery=s"""
+       |PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+       |PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+       |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+       |PREFIX dbo: <http://dbpedia.org/ontology/>
+       |PREFIX dbpedia: <http://dbpedia.org/resource/>
+       |PREFIX nytimes: <http://data.nytimes.com/elements/>
+       |PREFIX stockmarket: <http://stockmarket.com/elements/>
+       |PREFIX owl: <http://www.w3.org/2002/07/owl#>
+       |Select * where {
+       |service <http://155.223.25.4:8890/dbpedia/sparql> {
+       |	?dbpediaCompany rdf:type dbo:Company.
+       |	?dbpediaCompany dbo:numberOfStaff ?staffCount.
+       |	?dbpediaCompany owl:sameAs ?nytCompany. $filterDBpedia}
+       |service <http://155.223.25.1:8890/nytimes/sparql> {
+       |	?nytCompany rdf:type nytimes:Company.
+       |	?nytCompany nytimes:reputation ?reputation. $valuesNytimes}
+       |service <http://155.223.25.2:8890/stockmarket/sparql> {
+       |	?nytCompany rdf:type stockmarket:Company.
+       |	?nytCompany stockmarket:market ?market.
+       |	?nytCompany stockmarket:currency ?currency. $valuesStockmarket}
+       |}
+       |""".stripMargin
+
+    templateQuery
+  }
+
 }
