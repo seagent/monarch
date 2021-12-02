@@ -60,38 +60,42 @@ object OrganizationConstants {
   def generateFederatedQuery(selectionDBP: String, selectionNYT: String,selectionSTK: String): String={
 
     var (lowerBound,upperBound,reputationValues,marketValues)=(0,999999,"","")
-    var filterDBpedia=s"FILTER (strstarts(str(?dbpediaCompany), 'http://dbpedia.org/resource/company-')&&(?staffCount>$lowerBound&&?staffCount<=$upperBound))"
-    var valuesNytimes=s"VALUES (?reputation) {$reputationValues}"
-    var valuesStockmarket=s"VALUES (?market) {$marketValues}"
+    var filterDBpedia=""
+    var valuesNytimes=""
+    var valuesStockmarket=""
 
     selectionDBP match {
       case "ALL" => filterDBpedia=""
-      case "4500" => lowerBound=10000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
-      case "4000" => lowerBound=20000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
-      case "3500" => lowerBound=30000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
-      case "3000" => lowerBound=40000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
-      case "2500" => lowerBound=50000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
-      case "2000" => lowerBound=60000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
-      case "1500" => lowerBound=70000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
-      case "1000" => lowerBound=80000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
-      case "500" => lowerBound=90000; upperBound=100000; filterDBpedia=filterDBpedia.stripMargin
+      case "4500" => lowerBound=10000; upperBound=100000;
+      case "4000" => lowerBound=20000; upperBound=100000;
+      case "3500" => lowerBound=30000; upperBound=100000;
+      case "3000" => lowerBound=40000; upperBound=100000;
+      case "2500" => lowerBound=50000; upperBound=100000;
+      case "2000" => lowerBound=60000; upperBound=100000;
+      case "1500" => lowerBound=70000; upperBound=100000;
+      case "1000" => lowerBound=80000; upperBound=100000;
+      case "500" => lowerBound=90000; upperBound=100000;
     }
 
     selectionNYT match {
       case "ALL" => valuesNytimes=""
-      case "4000" => reputationValues="('Very High'^^xsd:string)('High'^^xsd:string)('Medium'^^xsd:string)('Low'^^xsd:string)"; valuesNytimes.stripMargin
-      case "3000" => reputationValues="('Very High'^^xsd:string)('High'^^xsd:string)('Medium'^^xsd:string)"; valuesNytimes.stripMargin
-      case "2000" => reputationValues="('Very High'^^xsd:string)('High'^^xsd:string)"; valuesNytimes.stripMargin
-      case "1000" => reputationValues="('Very High'^^xsd:string)"; valuesNytimes.stripMargin
+      case "4000" => reputationValues="('Very High'^^xsd:string)('High'^^xsd:string)('Medium'^^xsd:string)('Low'^^xsd:string)";
+      case "3000" => reputationValues="('Very High'^^xsd:string)('High'^^xsd:string)('Medium'^^xsd:string)";
+      case "2000" => reputationValues="('Very High'^^xsd:string)('High'^^xsd:string)";
+      case "1000" => reputationValues="('Very High'^^xsd:string)";
     }
 
     selectionSTK match {
       case "ALL" => valuesStockmarket=""
-      case "4000" => marketValues="('NYSE'^^xsd:string)('TSE'^^xsd:string)('FWB'^^xsd:string)('LSE'^^xsd:string)"; valuesStockmarket.stripMargin
-      case "3000" => marketValues="('NYSE'^^xsd:string)('TSE'^^xsd:string)('FWB'^^xsd:string)"; valuesStockmarket.stripMargin
-      case "2000" => marketValues="('NYSE'^^xsd:string)('TSE'^^xsd:string)"; valuesStockmarket.stripMargin
-      case "1000" => marketValues="('NYSE'^^xsd:string)"; valuesStockmarket.stripMargin
+      case "4000" => marketValues="('NYSE'^^xsd:string)('TSE'^^xsd:string)('FWB'^^xsd:string)('LSE'^^xsd:string)";
+      case "3000" => marketValues="('NYSE'^^xsd:string)('TSE'^^xsd:string)('FWB'^^xsd:string)";
+      case "2000" => marketValues="('NYSE'^^xsd:string)('TSE'^^xsd:string)";
+      case "1000" => marketValues="('NYSE'^^xsd:string)";
     }
+
+    filterDBpedia=s"FILTER (strstarts(str(?dbpediaCompany), 'http://dbpedia.org/resource/company-')&&(?staffCount>$lowerBound&&?staffCount<=$upperBound))"
+    valuesNytimes=s"VALUES (?reputation) {$reputationValues}"
+    valuesStockmarket=s"VALUES (?market) {$marketValues}"
 
     val templateQuery=s"""
        |PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>

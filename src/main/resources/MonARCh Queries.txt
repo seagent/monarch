@@ -161,3 +161,23 @@ service <http://155.223.25.2:8890/stockmarket/sparql> {
 	?nytCompany stockmarket:currency ?currency. VALUES (?market) {('NYSE'^^xsd:string)('TSE'^^xsd:string)('FWB'^^xsd:string)('LSE'^^xsd:string)}}
 }
 ———————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+MULTIPLE SERVICE QUERY (dbpedia, nytimes - Stockmarket)
+———————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX dbpedia: <http://dbpedia.org/resource/>
+PREFIX nytimes: <http://data.nytimes.com/elements/>
+PREFIX stockmarket: <http://stockmarket.com/elements/>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+Select * where { SERVICE ?ser {BIND(<http://155.223.25.4:8890/dbpedia/sparql> AS ?ser)} UNION {BIND(<http://155.223.25.1:8890/nytimes/sparql> AS ?ser)} {
+	?s rdfs:label ?label
+}
+service <http://155.223.25.2:8890/stockmarket/sparql>{
+	?nytCompany stockmarket:market ?market.
+	?nytCompany stockmarket:currency ?currency.
+}
+}
+———————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————

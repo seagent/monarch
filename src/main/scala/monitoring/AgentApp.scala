@@ -13,20 +13,15 @@ import tr.edu.ege.seagent.wodqa.voiddocument.VoidModelConstructor
 object AgentApp {
 
   private val DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE = "http://dbpedia.org/resource/company-"
-  private val COMPANY_COUNT = 3500
-
-  private val BUNCH_COUNT = 350
 
   def main(args: Array[String]): Unit = {
     //val organizationDataList = OrganizationDataReader.readOrganizationData("/organization_data.txt") "/home/burak/Development/monitoring-environment/resources/void"
     //val voidModel = VoidModelConstructor.constructVOIDSpaceModel(System.getProperty("user.dir") + "/src/main/resources/void")
 
-    var ipAddress = getIpAddress
-    var port = "2553"
-    if (args.size > 1) {
-      ipAddress = args(0)
-      port = args(1)
-    }
+    val ipAddress = if (args.isDefinedAt(0)) args(0) else getIpAddress
+    val port = if (args.isDefinedAt(1)) args(1) else "2553"
+    val query_count = if (args.isDefinedAt(2)) args(2).toInt else 5000
+    val bunch_percent = if (args.isDefinedAt(3)) args(3).toInt else 20
     val config = ConfigFactory.parseString("akka.remote.artery.canonical.hostname = " + ipAddress).
       withFallback(ConfigFactory.parseString("akka.remote.artery.canonical.port = " + port)).
       withFallback(ConfigFactory.load("agent.conf"))
@@ -34,12 +29,12 @@ object AgentApp {
     // Create an Akka system
     val system = ActorSystem("Subscribing", config)
     val client = system.actorOf(ClusterClient.props(ClusterClientSettings(system)), "client")
-    var index = 0
+    val bunch_count = query_count * bunch_percent / 100
     //val wodqaEngine = new WodqaEngine(true, false)
-    for (outerIndex <- 1 to COMPANY_COUNT) {
+    for (outerIndex <- 1 to query_count) {
       //for (orgData <- organizationDataList.asScala) {
       //index += 1
-      //for (index <- 0 to COMPANY_COUNT) {
+      //for (index <- 0 to QUERY_COUNT) {
       val agent = system.actorOf(Agent.props, "Agent-" + outerIndex)
       //println(system.actorSelection("akka://Subscribing@172.17.0.1:2553/user/"+agent.path.name))
       //val rawQuery = OrganizationConstants.createStockQuery(orgData.getDbpediaCompany, outerIndex)
@@ -48,7 +43,7 @@ object AgentApp {
       val federatedQuery = String.format(OrganizationConstants.FEDERATED_FILTERED_TYPED_STOCK_QUERY_TEMPLATE, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + outerIndex)
       agent ! Register(federatedQuery, client)
       //}
-      if (outerIndex % BUNCH_COUNT == 0) {
+      if (outerIndex % (bunch_count) == 0) {
         Thread.sleep(60000)
       }
     }
