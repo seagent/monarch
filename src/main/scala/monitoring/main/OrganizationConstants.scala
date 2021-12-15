@@ -188,13 +188,14 @@ object OrganizationConstants {
        |PREFIX nytimes: <http://data.nytimes.com/elements/>
        |PREFIX stockmarket: <http://stockmarket.com/elements/>
        |PREFIX owl: <http://www.w3.org/2002/07/owl#>
-       |Select * where { SERVICE ?ser {BIND(<http://155.223.25.4:8890/dbpedia/sparql> AS ?ser)} UNION {BIND(<http://155.223.25.1:8890/nytimes/sparql> AS ?ser)} {
+       |Select * where { {BIND(<http://155.223.25.4:8890/dbpedia/sparql> AS ?ser)} UNION {BIND(<http://155.223.25.1:8890/nytimes/sparql> AS ?ser)} SERVICE ?ser {
        |	?company rdfs:label ?label.
        |	?company owl:sameAs ?sameCompany
        |}
        |service <http://155.223.25.2:8890/stockmarket/sparql>{
        |	?company stockmarket:market ?market.
        |	?company stockmarket:currency ?currency.
+       |}
        |}
        |""".stripMargin
 
