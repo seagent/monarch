@@ -93,9 +93,9 @@ object OrganizationConstants {
       case "1000" => marketValues = "('NYSE'^^xsd:string)";
     }
 
-    filterDBpedia = s"FILTER (strstarts(str(?dbpediaCompany), 'http://dbpedia.org/resource/company-')&&(?staffCount>$lowerBound&&?staffCount<=$upperBound))"
-    valuesNytimes = s"VALUES (?reputation) {$reputationValues}"
-    valuesStockmarket = s"VALUES (?market) {$marketValues}"
+    if (lowerBound > 0 || upperBound < 999999) filterDBpedia = s"FILTER (strstarts(str(?dbpediaCompany), 'http://dbpedia.org/resource/company-')&&(?staffCount>$lowerBound&&?staffCount<=$upperBound))"
+    if (reputationValues.nonEmpty) valuesNytimes = s"VALUES (?reputation) {$reputationValues}"
+    if (marketValues.nonEmpty) valuesStockmarket = s"VALUES (?market) {$marketValues}"
 
     val templateQuery =
       s"""
@@ -125,7 +125,7 @@ object OrganizationConstants {
     templateQuery
   }
 
-  def generateFederatedQueryForSpecificDbpediaCompany(dbpediaCompanyURI:String, selectionNYT: String, selectionSTK: String): String = {
+  def generateFederatedQueryForSpecificDbpediaCompany(dbpediaCompanyURI: String, selectionNYT: String, selectionSTK: String): String = {
     var (reputationValues, marketValues) = ("", "")
     var valuesNytimes = ""
     var valuesStockmarket = ""
@@ -148,8 +148,8 @@ object OrganizationConstants {
       case _ => valuesStockmarket = ""
     }
 
-    valuesNytimes = s"VALUES (?reputation) {$reputationValues}"
-    valuesStockmarket = s"VALUES (?market) {$marketValues}"
+    if (reputationValues.nonEmpty) valuesNytimes = s"VALUES (?reputation) {$reputationValues}"
+    if (marketValues.nonEmpty) valuesStockmarket = s"VALUES (?market) {$marketValues}"
 
     val templateQuery =
       s"""

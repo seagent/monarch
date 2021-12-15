@@ -21,10 +21,11 @@ object AgentApp {
     val ipAddress = if (args.isDefinedAt(0)) args(0) else getIpAddress
     val port = if (args.isDefinedAt(1)) args(1) else "2553"
     val query_count = if (args.isDefinedAt(2)) args(2).toInt else 5000
-    val bunch_percent = if (args.isDefinedAt(3)) args(3).toInt else 20
-    val selectionDbpedia = if (args.isDefinedAt(4)) args(4) else ""
-    val selectionNytimes = if (args.isDefinedAt(5)) args(5) else ""
-    val selectionStock = if (args.isDefinedAt(6)) args(6) else ""
+    val bunch_percent = if (args.isDefinedAt(3)) args(3).toInt else 10
+    val query_selectivity = if (args.isDefinedAt(4)) args(4) else "HIGH"
+    val selectionDbpedia = if (args.isDefinedAt(5)) args(4) else "ALL"
+    val selectionNytimes = if (args.isDefinedAt(6)) args(5) else "ALL"
+    val selectionStock = if (args.isDefinedAt(7)) args(6) else "ALL"
     val config = ConfigFactory.parseString("akka.remote.artery.canonical.hostname = " + ipAddress).
       withFallback(ConfigFactory.parseString("akka.remote.artery.canonical.port = " + port)).
       withFallback(ConfigFactory.load("agent.conf"))
@@ -35,13 +36,7 @@ object AgentApp {
     val bunch_count = query_count * bunch_percent / 100
     for (outerIndex <- 1 to query_count) {
       val agent = system.actorOf(Agent.props, "Agent-" + outerIndex)
-      val federatedQuery =
-        if (selectionDbpedia == "SPECIFIC") {
-          OrganizationConstants.generateFederatedQueryForSpecificDbpediaCompany(DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + outerIndex,selectionNytimes, selectionStock)
-        }
-        else {
-          OrganizationConstants.generateGenericFederatedQuery(selectionDbpedia, selectionNytimes, selectionStock)
-        }
+      val federatedQuery = selectFederatedQuery(query_selectivity, selectionDbpedia, selectionNytimes, selectionStock, outerIndex)
       agent ! Register(federatedQuery, client)
       if (outerIndex % (bunch_count) == 0) {
         Thread.sleep(60000)
@@ -49,6 +44,14 @@ object AgentApp {
     }
 
 
+  }
+
+  private def selectFederatedQuery(query_selectivity: String, selectionDbpedia: String, selectionNytimes: String, selectionStock: String, outerIndex: Int) = {
+    query_selectivity match {
+      case "HIGH" => OrganizationConstants.generateFederatedQueryForSpecificDbpediaCompany(DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + outerIndex, selectionNytimes, selectionStock)
+      case "MODERATE" => OrganizationConstants.generateGenericFederatedQuery(selectionDbpedia, selectionNytimes, selectionStock)
+      case "LOW" => OrganizationConstants.GENERIC_FEDERATED_QUERY_WITH_MULTIPLE_SELECTION
+    }
   }
 
   private def getIpAddress: String = {
