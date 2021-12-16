@@ -57,7 +57,7 @@ object OrganizationConstants {
       "|?nytCompany$index <http://stockmarket.com/elements/stockPrice> ?stockPrice$index. }}""".stripMargin
   }
 
-  def generateGenericFederatedQuery(selectionDBP: String, selectionNYT: String, selectionSTK: String): String = {
+  def generateGenericFederatedQuery(index: Int, selectionDBP: String, selectionNYT: String, selectionSTK: String): String = {
 
     var (lowerBound, upperBound, reputationValues, marketValues) = (0, 999999, "", "")
     var filterDBpedia = ""
@@ -93,9 +93,9 @@ object OrganizationConstants {
       case "1000" => marketValues = "('NYSE'^^xsd:string)";
     }
 
-    if (lowerBound > 0 || upperBound < 999999) filterDBpedia = s"FILTER (strstarts(str(?dbpediaCompany), 'http://dbpedia.org/resource/company-')&&(?staffCount>$lowerBound&&?staffCount<=$upperBound))"
-    if (reputationValues.nonEmpty) valuesNytimes = s"VALUES (?reputation) {$reputationValues}"
-    if (marketValues.nonEmpty) valuesStockmarket = s"VALUES (?market) {$marketValues}"
+    if (lowerBound > 0 || upperBound < 999999) filterDBpedia = s"FILTER (strstarts(str(?dbpediaCompany$index), 'http://dbpedia.org/resource/company-')&&(?staffCount$index>$lowerBound&&?staffCount$index<=$upperBound))"
+    if (reputationValues.nonEmpty) valuesNytimes = s"VALUES (?reputation$index) {$reputationValues}"
+    if (marketValues.nonEmpty) valuesStockmarket = s"VALUES (?market$index) {$marketValues}"
 
     val templateQuery =
       s"""
@@ -109,23 +109,23 @@ object OrganizationConstants {
          |PREFIX owl: <http://www.w3.org/2002/07/owl#>
          |Select * where {
          |service <http://155.223.25.4:8890/dbpedia/sparql> {
-         |	?dbpediaCompany rdf:type dbo:Company.
-         |	?dbpediaCompany dbo:numberOfStaff ?staffCount.
-         |	?dbpediaCompany owl:sameAs ?nytCompany. $filterDBpedia}
+         |	?dbpediaCompany$index rdf:type dbo:Company.
+         |	?dbpediaCompany$index dbo:numberOfStaff ?staffCount$index.
+         |	?dbpediaCompany$index owl:sameAs ?nytCompany$index. $filterDBpedia}
          |service <http://155.223.25.1:8890/nytimes/sparql> {
-         |	?nytCompany rdf:type nytimes:Company.
-         |	?nytCompany nytimes:reputation ?reputation. $valuesNytimes}
+         |	?nytCompany$index rdf:type nytimes:Company.
+         |	?nytCompany$index nytimes:reputation ?reputation$index. $valuesNytimes}
          |service <http://155.223.25.2:8890/stockmarket/sparql> {
-         |	?nytCompany rdf:type stockmarket:Company.
-         |	?nytCompany stockmarket:market ?market.
-         |	?nytCompany stockmarket:currency ?currency. $valuesStockmarket}
+         |	?nytCompany$index rdf:type stockmarket:Company.
+         |	?nytCompany$index stockmarket:market ?market$index.
+         |	?nytCompany$index stockmarket:currency ?currency$index. $valuesStockmarket}
          |}
          |""".stripMargin
 
     templateQuery
   }
 
-  def generateFederatedQueryForSpecificDbpediaCompany(dbpediaCompanyURI: String, selectionNYT: String, selectionSTK: String): String = {
+  def generateFederatedQueryForSpecificDbpediaCompany(index: Int, dbpediaCompanyURI: String, selectionNYT: String, selectionSTK: String): String = {
     var (reputationValues, marketValues) = ("", "")
     var valuesNytimes = ""
     var valuesStockmarket = ""
@@ -148,8 +148,8 @@ object OrganizationConstants {
       case _ => valuesStockmarket = ""
     }
 
-    if (reputationValues.nonEmpty) valuesNytimes = s"VALUES (?reputation) {$reputationValues}"
-    if (marketValues.nonEmpty) valuesStockmarket = s"VALUES (?market) {$marketValues}"
+    if (reputationValues.nonEmpty) valuesNytimes = s"VALUES (?reputation$index) {$reputationValues}"
+    if (marketValues.nonEmpty) valuesStockmarket = s"VALUES (?market$index) {$marketValues}"
 
     val templateQuery =
       s"""
@@ -163,19 +163,41 @@ object OrganizationConstants {
          |PREFIX owl: <http://www.w3.org/2002/07/owl#>
          |Select * where {
          |service <http://155.223.25.4:8890/dbpedia/sparql> {
-         |	<$dbpediaCompanyURI> dbo:numberOfStaff ?staffCount.
-         |	<$dbpediaCompanyURI> owl:sameAs ?nytCompany.}
+         |	<$dbpediaCompanyURI> dbo:numberOfStaff ?staffCount$index.
+         |	<$dbpediaCompanyURI> owl:sameAs ?nytCompany$index.}
          |service <http://155.223.25.1:8890/nytimes/sparql> {
-         |	?nytCompany rdf:type nytimes:Company.
-         |	?nytCompany nytimes:reputation ?reputation. $valuesNytimes}
+         |	?nytCompany$index rdf:type nytimes:Company.
+         |	?nytCompany$index nytimes:reputation ?reputation$index. $valuesNytimes}
          |service <http://155.223.25.2:8890/stockmarket/sparql> {
-         |	?nytCompany rdf:type stockmarket:Company.
-         |	?nytCompany stockmarket:market ?market.
-         |	?nytCompany stockmarket:currency ?currency. $valuesStockmarket}
+         |	?nytCompany$index rdf:type stockmarket:Company.
+         |	?nytCompany$index stockmarket:market ?market$index.
+         |	?nytCompany$index stockmarket:currency ?currency$index. $valuesStockmarket}
          |}
          |""".stripMargin
 
     templateQuery
+  }
+
+  def generateFederatedQueryWithMultipleSelection(index: Int): String = {
+      s"""
+         |PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+         |PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+         |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+         |PREFIX dbo: <http://dbpedia.org/ontology/>
+         |PREFIX dbpedia: <http://dbpedia.org/resource/>
+         |PREFIX nytimes: <http://data.nytimes.com/elements/>
+         |PREFIX stockmarket: <http://stockmarket.com/elements/>
+         |PREFIX owl: <http://www.w3.org/2002/07/owl#>
+         |Select * where { {BIND(<http://155.223.25.4:8890/dbpedia/sparql> AS ?ser$index)} UNION {BIND(<http://155.223.25.1:8890/nytimes/sparql> AS ?ser$index)} SERVICE ?ser$index {
+         |	?company$index rdfs:label ?label$index.
+         |	?company$index owl:sameAs ?sameCompany$index. FILTER (strstarts(str(?company$index), 'http://dbpedia.org/resource/company-')||strstarts(str(?company$index), 'http://data.nytimes.com/company-'))
+         |}
+         |service <http://155.223.25.2:8890/stockmarket/sparql>{
+         |	?company$index stockmarket:market ?market$index.
+         |	?company$index stockmarket:currency ?currency$index.
+         |}
+         |}
+         |""".stripMargin
   }
 
   val GENERIC_FEDERATED_QUERY_WITH_MULTIPLE_SELECTION =
@@ -190,7 +212,7 @@ object OrganizationConstants {
        |PREFIX owl: <http://www.w3.org/2002/07/owl#>
        |Select * where { {BIND(<http://155.223.25.4:8890/dbpedia/sparql> AS ?ser)} UNION {BIND(<http://155.223.25.1:8890/nytimes/sparql> AS ?ser)} SERVICE ?ser {
        |	?company rdfs:label ?label.
-       |	?company owl:sameAs ?sameCompany
+       |	?company owl:sameAs ?sameCompany. FILTER (strstarts(str(?company), 'http://dbpedia.org/resource/company-')||strstarts(str(?company), 'http://data.nytimes.com/company-'))
        |}
        |service <http://155.223.25.2:8890/stockmarket/sparql>{
        |	?company stockmarket:market ?market.

@@ -34,11 +34,11 @@ object AgentApp {
     val system = ActorSystem("Subscribing", config)
     val client = system.actorOf(ClusterClient.props(ClusterClientSettings(system)), "client")
     val bunch_count = query_count * bunch_percent / 100
-    for (outerIndex <- 1 to query_count) {
-      val agent = system.actorOf(Agent.props, "Agent-" + outerIndex)
-      val federatedQuery = selectFederatedQuery(query_selectivity, selectionDbpedia, selectionNytimes, selectionStock, outerIndex)
+    for (index <- 1 to query_count) {
+      val agent = system.actorOf(Agent.props, "Agent-" + index)
+      val federatedQuery = selectFederatedQuery(index, query_selectivity, selectionDbpedia, selectionNytimes, selectionStock, index)
       agent ! Register(federatedQuery, client)
-      if (outerIndex % (bunch_count) == 0) {
+      if (index % (bunch_count) == 0) {
         Thread.sleep(60000)
       }
     }
@@ -46,11 +46,11 @@ object AgentApp {
 
   }
 
-  private def selectFederatedQuery(query_selectivity: String, selectionDbpedia: String, selectionNytimes: String, selectionStock: String, outerIndex: Int) = {
+  private def selectFederatedQuery(index: Int, query_selectivity: String, selectionDbpedia: String, selectionNytimes: String, selectionStock: String, outerIndex: Int) = {
     query_selectivity match {
-      case "HIGH" => OrganizationConstants.generateFederatedQueryForSpecificDbpediaCompany(DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + outerIndex, selectionNytimes, selectionStock)
-      case "MODERATE" => OrganizationConstants.generateGenericFederatedQuery(selectionDbpedia, selectionNytimes, selectionStock)
-      case "LOW" => OrganizationConstants.GENERIC_FEDERATED_QUERY_WITH_MULTIPLE_SELECTION
+      case "HIGH" => OrganizationConstants.generateFederatedQueryForSpecificDbpediaCompany(index, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + outerIndex, selectionNytimes, selectionStock)
+      case "MODERATE" => OrganizationConstants.generateGenericFederatedQuery(index, selectionDbpedia, selectionNytimes, selectionStock)
+      case "LOW" => OrganizationConstants.generateFederatedQueryWithMultipleSelection(index)
     }
   }
 
