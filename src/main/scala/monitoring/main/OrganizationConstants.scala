@@ -93,7 +93,7 @@ object OrganizationConstants {
       case "1000" => marketValues = "('NYSE'^^xsd:string)";
     }
 
-    if (lowerBound > 0 || upperBound < 999999) filterDBpedia = s"FILTER (strstarts(str(?dbpediaCompany$index), 'http://dbpedia.org/resource/company-')&&(?staffCount$index>$lowerBound&&?staffCount$index<=$upperBound))"
+    if (lowerBound > 0 || upperBound < 999999) filterDBpedia = s"FILTER (?staffCount$index>$lowerBound&&?staffCount$index<=$upperBound)"
     if (reputationValues.nonEmpty) valuesNytimes = s"VALUES (?reputation$index) {$reputationValues}"
     if (marketValues.nonEmpty) valuesStockmarket = s"VALUES (?market$index) {$marketValues}"
 
@@ -114,11 +114,13 @@ object OrganizationConstants {
          |	?dbpediaCompany$index owl:sameAs ?nytCompany$index. $filterDBpedia}
          |service <http://155.223.25.1:8890/nytimes/sparql> {
          |	?nytCompany$index rdf:type nytimes:Company.
-         |	?nytCompany$index nytimes:reputation ?reputation$index. $valuesNytimes}
+         |	?nytCompany$index nytimes:reputation ?reputation$index.
+         |  ?nytCompany$index nytimes:associated_article_count ?articleCount$index. $valuesNytimes}
          |service <http://155.223.25.2:8890/stockmarket/sparql> {
          |	?nytCompany$index rdf:type stockmarket:Company.
          |	?nytCompany$index stockmarket:market ?market$index.
-         |	?nytCompany$index stockmarket:currency ?currency$index. $valuesStockmarket}
+         |	?nytCompany$index stockmarket:currency ?currency$index.
+         | 	?nytCompany$index stockmarket:stockPrice ?stockPrice$index. $valuesStockmarket}
          |}
          |""".stripMargin
 
@@ -167,11 +169,13 @@ object OrganizationConstants {
          |	<$dbpediaCompanyURI> owl:sameAs ?nytCompany$index.}
          |service <http://155.223.25.1:8890/nytimes/sparql> {
          |	?nytCompany$index rdf:type nytimes:Company.
-         |	?nytCompany$index nytimes:reputation ?reputation$index. $valuesNytimes}
+         |	?nytCompany$index nytimes:reputation ?reputation$index.
+         |  ?nytCompany$index nytimes:associated_article_count ?articleCount$index. $valuesNytimes}
          |service <http://155.223.25.2:8890/stockmarket/sparql> {
          |	?nytCompany$index rdf:type stockmarket:Company.
          |	?nytCompany$index stockmarket:market ?market$index.
-         |	?nytCompany$index stockmarket:currency ?currency$index. $valuesStockmarket}
+         |	?nytCompany$index stockmarket:currency ?currency$index.
+         | 	?nytCompany$index stockmarket:stockPrice ?stockPrice$index. $valuesStockmarket}
          |}
          |""".stripMargin
 
@@ -189,12 +193,14 @@ object OrganizationConstants {
          |PREFIX stockmarket: <http://stockmarket.com/elements/>
          |PREFIX owl: <http://www.w3.org/2002/07/owl#>
          |Select * where { {BIND(<http://155.223.25.4:8890/dbpedia/sparql> AS ?ser$index)} UNION {BIND(<http://155.223.25.1:8890/nytimes/sparql> AS ?ser$index)} SERVICE ?ser$index {
-         |	?company$index rdfs:label ?label$index.
-         |	?company$index owl:sameAs ?sameCompany$index. FILTER (strstarts(str(?company$index), 'http://dbpedia.org/resource/company-')||strstarts(str(?company$index), 'http://data.nytimes.com/company-'))
+         |	?company$index rdf:type ?type$index. VALUES (?type$index) {(dbo:Company)(nytimes:Company)(stockmarket:Company)}
+         |  ?company$index rdfs:label ?label$index.
+         |	?company$index owl:sameAs ?sameCompany$index.
          |}
          |service <http://155.223.25.2:8890/stockmarket/sparql>{
          |	?company$index stockmarket:market ?market$index.
          |	?company$index stockmarket:currency ?currency$index.
+         |  ?company$index stockmarket:stockPrice ?stockPrice$index.
          |}
          |}
          |""".stripMargin
@@ -211,12 +217,14 @@ object OrganizationConstants {
        |PREFIX stockmarket: <http://stockmarket.com/elements/>
        |PREFIX owl: <http://www.w3.org/2002/07/owl#>
        |Select * where { {BIND(<http://155.223.25.4:8890/dbpedia/sparql> AS ?ser)} UNION {BIND(<http://155.223.25.1:8890/nytimes/sparql> AS ?ser)} SERVICE ?ser {
+       |	?company rdf:type ?type. VALUES (?type) {(dbo:Company)(nytimes:Company)(stockmarket:Company)}
        |	?company rdfs:label ?label.
-       |	?company owl:sameAs ?sameCompany. FILTER (strstarts(str(?company), 'http://dbpedia.org/resource/company-')||strstarts(str(?company), 'http://data.nytimes.com/company-'))
+       |	?company owl:sameAs ?sameCompany.
        |}
        |service <http://155.223.25.2:8890/stockmarket/sparql>{
        |	?company stockmarket:market ?market.
        |	?company stockmarket:currency ?currency.
+       |  ?company stockmarket:stockPrice ?stockPrice.
        |}
        |}
        |""".stripMargin
