@@ -75,6 +75,7 @@ object OrganizationConstants {
       case "1500" => lowerBound = 70000; upperBound = 100000;
       case "1000" => lowerBound = 80000; upperBound = 100000;
       case "500" => lowerBound = 90000; upperBound = 100000;
+      case _ => filterDBpedia = ""
     }
 
     selectionNYT match {
@@ -83,6 +84,7 @@ object OrganizationConstants {
       case "3000" => reputationValues = "('Very High'^^xsd:string)('High'^^xsd:string)('Medium'^^xsd:string)";
       case "2000" => reputationValues = "('Very High'^^xsd:string)('High'^^xsd:string)";
       case "1000" => reputationValues = "('Very High'^^xsd:string)";
+      case _ => valuesNytimes = ""
     }
 
     selectionSTK match {
@@ -91,6 +93,7 @@ object OrganizationConstants {
       case "3000" => marketValues = "('NYSE'^^xsd:string)('TSE'^^xsd:string)('FWB'^^xsd:string)";
       case "2000" => marketValues = "('NYSE'^^xsd:string)('TSE'^^xsd:string)";
       case "1000" => marketValues = "('NYSE'^^xsd:string)";
+      case _ => valuesStockmarket = ""
     }
 
     if (lowerBound > 0 || upperBound < 999999) filterDBpedia = s"FILTER (?staffCount$index>$lowerBound&&?staffCount$index<=$upperBound)"
@@ -206,6 +209,36 @@ object OrganizationConstants {
          |""".stripMargin
   }
 
+  def generateHighlySelectiveFederatedQuery(index: Int): String = {
+    s"""
+       |PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+       |PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+       |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+       |PREFIX dbo: <http://dbpedia.org/ontology/>
+       |PREFIX dbpedia: <http://dbpedia.org/resource/>
+       |PREFIX nytimes: <http://data.nytimes.com/elements/>
+       |PREFIX stockmarket: <http://stockmarket.com/elements/>
+       |PREFIX owl: <http://www.w3.org/2002/07/owl#>
+       |Select * where {
+       |service <http://155.223.25.4:8890/dbpedia/sparql> {
+       |  ?company$index rdf:type dbo:Company.
+       |	?company$index dbo:numberOfStaff ?staffCount$index.
+       |	?company$index owl:sameAs ?nytCompany$index.  FILTER (?staffCount$index>100 && ?staffCount$index<=1000)}
+       |service <http://155.223.25.1:8890/nytimes/sparql> {
+       |  ?nytCompany$index rdf:type nytimes:Company.
+       |  ?nytCompany$index nytimes:reputation "Elite"^^xsd:string.
+       |  ?nytCompany$index nytimes:associated_article_count ?articleCount$index.
+       |}
+       |service <http://155.223.25.2:8890/stockmarket/sparql>{
+       |	?nytCompany$index rdf:type stockmarket:Company.
+       |  ?nytCompany$index stockmarket:valueChange ?valueChange$index. FILTER (?valueChange$index>=10000&&?valueChange$index<=15000)
+       |  ?nytCompany$index stockmarket:stockPrice ?stockPrice$index.
+       |}
+       |}
+       |""".stripMargin
+  }
+
+
   val GENERIC_FEDERATED_QUERY_WITH_MULTIPLE_SELECTION =
     s"""
        |PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -225,6 +258,34 @@ object OrganizationConstants {
        |	?company stockmarket:market ?market.
        |	?company stockmarket:currency ?currency.
        |  ?company stockmarket:stockPrice ?stockPrice.
+       |}
+       |}
+       |""".stripMargin
+
+  val VERY_HIGH_SELECTIVE_FEDERATED_QUERY =
+    s"""
+       |PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+       |PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+       |PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+       |PREFIX dbo: <http://dbpedia.org/ontology/>
+       |PREFIX dbpedia: <http://dbpedia.org/resource/>
+       |PREFIX nytimes: <http://data.nytimes.com/elements/>
+       |PREFIX stockmarket: <http://stockmarket.com/elements/>
+       |PREFIX owl: <http://www.w3.org/2002/07/owl#>
+       |Select * where {
+       |service <http://155.223.25.4:8890/dbpedia/sparql> {
+       |  ?company rdf:type dbo:Company.
+       |	?company dbo:numberOfStaff ?staffCount.
+       |	?company owl:sameAs ?nytCompany.  FILTER (?staffCount>100 && ?staffCount<=1000)}
+       |service <http://155.223.25.1:8890/nytimes/sparql> {
+       |  ?nytCompany rdf:type nytimes:Company.
+       |  ?nytCompany nytimes:reputation "Elite"^^xsd:string.
+       |  ?nytCompany nytimes:associated_article_count ?articleCount.
+       |}
+       |service <http://155.223.25.2:8890/stockmarket/sparql>{
+       |	?nytCompany rdf:type stockmarket:Company.
+       |  ?nytCompany stockmarket:valueChange ?valueChange. FILTER (?valueChange>=10000&&?valueChange<=15000)
+       |  ?nytCompany stockmarket:stockPrice ?stockPrice.
        |}
        |}
        |""".stripMargin
