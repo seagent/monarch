@@ -11,8 +11,6 @@ import tr.edu.ege.seagent.wodqa.voiddocument.VoidModelConstructor
 
 object AgentApp {
 
-  private val DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE = "http://dbpedia.org/resource/company-"
-
   def main(args: Array[String]): Unit = {
     //val organizationDataList = OrganizationDataReader.readOrganizationData("/organization_data.txt") "/home/burak/Development/monitoring-environment/resources/void"
     //val voidModel = VoidModelConstructor.constructVOIDSpaceModel(System.getProperty("user.dir") + "/src/main/resources/void")
@@ -37,12 +35,11 @@ object AgentApp {
       val agent = system.actorOf(Agent.props, "Agent-" + index)
 
       val federatedQuery = query_selectivity match {
-        case "VERY_HIGH" => OrganizationConstants.generateHighlySelectiveFederatedQuery(index)
-        case "HIGH" => OrganizationConstants.generateFederatedQueryForSpecificDbpediaCompany(index, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + index, selectionNytimes, selectionStock)
-        case "MID" => OrganizationConstants.generateGenericFederatedQuery(index, selectionDbpedia, selectionNytimes, selectionStock)
-        case "LOW" => OrganizationConstants.generateFederatedQueryWithMultipleSelection(index)
-        case "MIX" => selectMixedFederatedQuery(query_count, index)
-
+        case "MOST" => OrganizationConstants.generateSelectiveSpecificFederatedQuery(index, selectionDbpedia, selectionNytimes, selectionStock)
+        case "HIGH" => OrganizationConstants.generateSelectiveGenericFederatedQuery(index, selectionDbpedia, selectionNytimes, selectionStock)
+        case "MID" => OrganizationConstants.generateFederatedQueryForSpecificDbpediaCompany(index, selectionDbpedia, selectionNytimes, selectionStock)
+        case "LOW" => OrganizationConstants.generateGenericFederatedQuery(index, selectionDbpedia, selectionNytimes, selectionStock)
+        case "LEAST" => OrganizationConstants.generateFederatedQueryWithMultipleSelection(index)
       }
 
       //val federatedQuery = String.format(OrganizationConstants.FEDERATED_STOCK_QUERY_TEMPLATE,DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE+index)
@@ -54,45 +51,6 @@ object AgentApp {
     }
 
 
-  }
-
-  private def selectMixedFederatedQuery(query_count: Int, index: Int) = {
-    if (index <= query_count * 30 / 100) {
-      OrganizationConstants.generateHighlySelectiveFederatedQuery(index)
-    } else if (index > query_count * 30 / 100 && index <= query_count * 48 / 100) {
-      OrganizationConstants.generateFederatedQueryForSpecificDbpediaCompany(index, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + index, "1000", "1000")
-    } else if (index > query_count * 48 / 100 && index <= query_count * 58 / 100) {
-      OrganizationConstants.generateFederatedQueryForSpecificDbpediaCompany(index, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + index, "2000", "2000")
-    }
-    else if (index > query_count * 58 / 100 && index <= query_count * 62 / 100) {
-      OrganizationConstants.generateFederatedQueryForSpecificDbpediaCompany(index, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + index, "3000", "3000")
-    }
-    else if (index > query_count * 62 / 100 && index <= query_count * 64 / 100) {
-      OrganizationConstants.generateFederatedQueryForSpecificDbpediaCompany(index, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + index, "4000", "4000")
-    }
-    else if (index > query_count * 64 / 100 && index <= query_count * 66 / 100) {
-      OrganizationConstants.generateFederatedQueryForSpecificDbpediaCompany(index, DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE + index, "ALL", "ALL")
-    }
-    else if (index > query_count * 66 / 100 && index <= query_count * 72 / 100) {
-      OrganizationConstants.generateGenericFederatedQuery(index, "1000", "1000", "1000")
-    }
-    else if (index > query_count * 72 / 100 && index <= query_count * 75 / 100) {
-      OrganizationConstants.generateGenericFederatedQuery(index, "2000", "2000", "2000")
-    }
-    else if (index > query_count * 75 / 100 && index <= query_count * 77 / 100) {
-      OrganizationConstants.generateGenericFederatedQuery(index, "3000", "3000", "3000")
-    }
-    else if (index > query_count * 77 / 100 && index <= query_count * 78 / 100) {
-      OrganizationConstants.generateGenericFederatedQuery(index, "4000", "4000", "4000")
-    }
-    else if (index > query_count * 78 / 100 && index <= query_count * 79 / 100) {
-      OrganizationConstants.generateGenericFederatedQuery(index, "ALL", "ALL", "ALL")
-    }
-    else if (index > query_count * 79 / 100 && index <= query_count * 80 / 100){
-      OrganizationConstants.generateFederatedQueryWithMultipleSelection(index)
-    }else{
-      OrganizationConstants.generateHighlySelectiveFederatedQuery(index)
-    }
   }
 
   private def getIpAddress: String = {
