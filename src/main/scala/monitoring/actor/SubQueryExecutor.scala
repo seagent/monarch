@@ -5,6 +5,7 @@ import akka.cluster.sharding.ShardRegion
 import com.hp.hpl.jena.query.QueryExecutionFactory
 import monitoring.main.{DbUtils, MonitoringUtils, OrganizationConstants}
 import monitoring.message.{ExecuteSubQuery, Result, ResultChange, ScheduledQuery}
+import org.apache.spark.util.SizeEstimator
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -45,6 +46,9 @@ class SubQueryExecutor extends Actor with ActorLogging {
       registerSender
       if (queryResult.isDefined) {
         sender ! queryResult.get
+        val sizeInBytes = SizeEstimator.estimate(queryResult.get)
+        log.info("Size of the contained result message sent from SubQueryExecutor to SubQueryDistributor is: [{}] Bytes, and is [{}]",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes))
+
       } else {
         val result = executeQuery(query, endpoint)
         queryResult = Some(result)
@@ -54,6 +58,8 @@ class SubQueryExecutor extends Actor with ActorLogging {
           schedule(ScheduledQuery(esq))
         }
       }
+      val sizeInBytes = SizeEstimator.estimate(queryResult.get)
+      log.info("Size of the new result message sent from SubQueryExecutor to SubQueryDistributor is: [{}] Bytes, and is [{}]",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes))
 
     case sq@ScheduledQuery(esq) =>
       //log.info("Hash Code for Scheduled Sub Query: [{}], and Scheduled Query Value: [{}]", sq.hashCode, esq)
@@ -61,7 +67,10 @@ class SubQueryExecutor extends Actor with ActorLogging {
       if (!queryResult.contains(result)) {
         log.info("A change has been detected for the sub-query [{}], and endpoint [{}]", esq.query, esq.endpoint)
         queryResult = Some(result)
-        notifyRegisteryList(ResultChange(result,System.currentTimeMillis()))
+        val resultChange = ResultChange(result, System.currentTimeMillis())
+        notifyRegisteryList(resultChange)
+        val sizeInBytes = SizeEstimator.estimate(resultChange)
+        log.info("Size of the result change message sent from SubQueryExecutor to SubQueryDistributor is: [{}] Bytes, and is [{}]. Message has been notified [{}] times",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes),register.size)
       }
   }
 
@@ -69,7 +78,7 @@ class SubQueryExecutor extends Actor with ActorLogging {
     context.system.scheduler.schedule(10.minutes, 10.minutes, self, sq)
   }
 
-  private def notifyRegisteryList(message: Any) = {
+  private def notifyRegisteryList(message: AnyRef) = {
     register foreach {
       registered => {
         registered ! message

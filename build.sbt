@@ -26,9 +26,13 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-json" % jsonVersion,
   "net.debasishg" %% "redisclient" % "3.7",
   "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
-  "io.kamon" % "sigar-loader" % "1.6.6-rev002"
+  "io.kamon" % "sigar-loader" % "1.6.6-rev002",
+  "org.apache.spark" %% "spark-core" % "3.2.1",
+  "org.apache.spark" %% "spark-streaming" % "3.2.1" % "provided"
 ).map(_ exclude("org.slf4j", "*"))
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3"
+
+
 
 //libraryDependencies ++= Seq(
 //  "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.103",

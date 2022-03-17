@@ -58,7 +58,7 @@ object OrganizationConstants {
       "|?nytCompany$index <http://stockmarket.com/elements/stockPrice> ?stockPrice$index. }}""".stripMargin
   }
 
-  def generateGenericFederatedQuery(index: Int, selectionDBP: String, selectionNYT: String, selectionSTK: String): String = {
+  def generateLowSelectiveFederatedQuery(index: Int, selectionDBP: String, selectionNYT: String, selectionSTK: String): String = {
 
     var (lowerBound, upperBound, reputationValues, marketValues) = (0, 999999, "", "")
     var filterDBpedia = ""
@@ -131,7 +131,7 @@ object OrganizationConstants {
     templateQuery
   }
 
-  def generateSelectiveGenericFederatedQuery(index: Int, selectionDBP: String, selectionNYT: String, selectionSTK: String): String = {
+  def generateHighSelectiveFederatedQuery(index: Int, selectionDBP: String, selectionNYT: String, selectionSTK: String): String = {
 
     var (lowerBound, upperBound, industryValues) = (0, 500, "")
     var filterStock = ""
@@ -201,7 +201,7 @@ object OrganizationConstants {
   }
 
 
-  def generateSelectiveSpecificFederatedQuery(index: Int, selectionDBP: String, selectionNYT: String, selectionSTK: String): String = {
+  def generateMostSelectiveFederatedQuery(index: Int, selectionDBP: String, selectionNYT: String, selectionSTK: String): String = {
 
     var (lowerBound, upperBound, industryValues) = (0, 500, "")
     var filterStock = ""
@@ -270,7 +270,7 @@ object OrganizationConstants {
   }
 
 
-  def generateFederatedQueryForSpecificDbpediaCompany(index: Int, selectionDBP: String, selectionNYT: String, selectionSTK: String): String = {
+  def generateMidSelectiveFederatedQuery(index: Int, selectionDBP: String, selectionNYT: String, selectionSTK: String): String = {
     var (reputationValues, marketValues) = ("", "")
     var valuesNytimes = ""
     var valuesStockmarket = ""
@@ -338,7 +338,7 @@ object OrganizationConstants {
     templateQuery
   }
 
-  def generateFederatedQueryWithMultipleSelection(index: Int): String = {
+  def generateLeastSelectiveFederatedQuery(index: Int): String = {
     s"""
        |PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
        |PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>

@@ -35,11 +35,11 @@ object AgentApp {
       val agent = system.actorOf(Agent.props, "Agent-" + index)
 
       val federatedQuery = query_selectivity match {
-        case "MOST" => OrganizationConstants.generateSelectiveSpecificFederatedQuery(index, selectionDbpedia, selectionNytimes, selectionStock)
-        case "HIGH" => OrganizationConstants.generateSelectiveGenericFederatedQuery(index, selectionDbpedia, selectionNytimes, selectionStock)
-        case "MID" => OrganizationConstants.generateFederatedQueryForSpecificDbpediaCompany(index, selectionDbpedia, selectionNytimes, selectionStock)
-        case "LOW" => OrganizationConstants.generateGenericFederatedQuery(index, selectionDbpedia, selectionNytimes, selectionStock)
-        case "LEAST" => OrganizationConstants.generateFederatedQueryWithMultipleSelection(index)
+        case "MOST" => OrganizationConstants.generateMostSelectiveFederatedQuery(index, selectionDbpedia, selectionNytimes, selectionStock)
+        case "HIGH" => OrganizationConstants.generateHighSelectiveFederatedQuery(index, selectionDbpedia, selectionNytimes, selectionStock)
+        case "MID" => OrganizationConstants.generateMidSelectiveFederatedQuery(index, selectionDbpedia, selectionNytimes, selectionStock)
+        case "LOW" => OrganizationConstants.generateLowSelectiveFederatedQuery(index, selectionDbpedia, selectionNytimes, selectionStock)
+        case "LEAST" => OrganizationConstants.generateLeastSelectiveFederatedQuery(index)
       }
 
       //val federatedQuery = String.format(OrganizationConstants.FEDERATED_STOCK_QUERY_TEMPLATE,DBPEDIA_COMPANY_RESOURCE_URI_TEMPLATE+index)

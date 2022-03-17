@@ -1,14 +1,14 @@
 package monitoring.actor
 
 import java.io.ByteArrayOutputStream
-
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.sharding.{ClusterSharding, ShardRegion}
 import com.hp.hpl.jena.query.{ResultSetFactory, ResultSetFormatter}
 import com.hp.hpl.jena.sparql.engine.binding.Binding
 import main.QueryIterCollection
-import monitoring.main.DbUtils
+import monitoring.main.{DbUtils, MonitoringUtils}
 import monitoring.message.{ExecuteSubQuery, FederateSubQuery, Result, ResultChange}
+import org.apache.spark.util.SizeEstimator
 import play.api.libs.json.Json
 
 import scala.collection.JavaConverters._
@@ -53,6 +53,8 @@ class SubQueryDistributor extends Actor with ActorLogging {
       log.debug("Hash Code for Federate Sub Query: [{}], and Query Value: [{}], Endpoint Values: [{}]", fsq.hashCode, query, endpoints)
       if (queryResult.isDefined) {
         sender ! queryResult.get
+        val sizeInBytes = SizeEstimator.estimate(queryResult.get)
+        log.info("Size of the contained result message sent from SubQueryDistributor to QueryDistributor is: [{}] Bytes, and is [{}]",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes))
       } else {
         distribute(query, endpoints)
         registerSender
@@ -65,13 +67,19 @@ class SubQueryDistributor extends Actor with ActorLogging {
         val finalRes = constructResult
         queryResult = Some(finalRes)
         notifyRegisteryList(finalRes)
+        val sizeInBytes = SizeEstimator.estimate(finalRes)
+        log.info("Size of the new result message sent from SubQueryDistributor to QueryDistributor is: [{}] Bytes, and is [{}]. Message has been notified [{}] times",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes),registeryList.size)
+
       }
     case rc@ResultChange(_,detectionTime) =>
       resultMap += (rc.result.key -> rc.result)
       val newRes = constructResult
       if (!queryResult.contains(newRes)) {
         log.info("A change has been detected for the sub-query [{}], and endpoints [{}]", federateSubQuery.get.query, federateSubQuery.get.endpoints)
-        notifyRegisteryList(ResultChange(newRes,detectionTime))
+        val resultChange = ResultChange(newRes, detectionTime)
+        notifyRegisteryList(resultChange)
+        val sizeInBytes = SizeEstimator.estimate(resultChange)
+        log.info("Size of the result change message sent from SubQueryDistributor to QueryDistributor is: [{}] Bytes, and is [{}]. Message has been notified [{}] times",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes),registeryList.size)
       }
       queryResult = Some(newRes)
   }
@@ -98,8 +106,12 @@ class SubQueryDistributor extends Actor with ActorLogging {
     endpoints foreach {
       endpoint =>
         val subQueryExecutorRegion = ClusterSharding.get(context.system).shardRegion("SubQueryExecutor")
-        subQueryExecutorRegion ! ExecuteSubQuery(query, endpoint)
+        val executeSubQuery = ExecuteSubQuery(query, endpoint)
+        subQueryExecutorRegion ! executeSubQuery
+        val sizeInBytes = SizeEstimator.estimate(executeSubQuery)
+        log.info("Size of the ExecuteSubQuery message sent from SubQueryDistributor to SubQueryExecutor is: [{}] Bytes, and is [{}]",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes))
     }
+
   }
 
   private def registerSender = {
@@ -108,7 +120,7 @@ class SubQueryDistributor extends Actor with ActorLogging {
     }
   }
 
-  private def notifyRegisteryList(msg: Any) = {
+  private def notifyRegisteryList(msg: AnyRef) = {
     registeryList foreach {
       registered => {
         registered ! msg
