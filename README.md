@@ -41,3 +41,15 @@ mvn install
 ```
 Binaries are generated under the *'target'* folder as *DatasetUpdater-0.0.1-SNAPSHOT-allinone.jar*. Simply rename the jar as *DatasetUpdater.jar*, then executable for DatasetUpdater is ready.
 
+### Setting up the Cluster
+
+In a unix based terminal for the master node simply execute following command by replacing *ip_address* with the ip address of that node.
+
+```console
+./monarch/bin/app ip_address 2551 clean
+```
+For joining new nodes to the cluster, simply execute following command by replacing *ip_address* with the ip address of that node
+
+```console
+./monarch/bin/app ip_address 2551
+```
