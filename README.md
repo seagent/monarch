@@ -43,7 +43,21 @@ Binaries are generated under the *'target'* folder as *DatasetUpdater-0.0.1-SNAP
 
 ### Setting up the Cluster
 
-In a unix based terminal for the master node simply execute following command by replacing *ip_address* with the ip address of that node.
+In order to monitor more queries, JVM heap of the cluster nodes need to be set as high as possible with the following command below:
+
+```console
+export _JAVA_OPTIONS="-Xmx30g"
+```
+Note: 30g is just an example amount, just simply change ip with the amount of heap memory you desired
+
+
+Firstly, in a unix based terminal we need to change the permissions of monarch folder as executable with the command below:
+
+```console
+chmod 755 -R monarch/*
+```
+
+For the master node simply execute following command by replacing *ip_address* with the ip address of that node.
 
 ```console
 ./monarch/bin/app ip_address 2551 clean
@@ -52,4 +66,17 @@ For joining new nodes to the cluster, simply execute following command by replac
 
 ```console
 ./monarch/bin/app ip_address 2551
+```
+
+### Setting up DatasetUpdater Programs
+
+For updating Nytimes following command is executed in terminal:
+
+```console
+java -cp DatasetUpdater.jar main.MainNytimesUpdater
+```
+
+For updating StockMarket following command is executed in terminal:
+```console
+java -cp DatasetUpdater.jar main.MainStockUpdater
 ```
