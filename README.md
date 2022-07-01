@@ -21,6 +21,8 @@ Note: In order to track the actor count and query count metrics, Redis server is
 
 After the environment has been set up, executable codes of MonARCh and DatasetUpdater are need to be prepared. MonARCh is written in Scala, and DatasetUpdater is written in Java.
 
+#MonARCh
+
 In order to build the executable binaries for MonARCh, simply execute following commands inside 'monarch-master' folder after cloning or downloading source code:
 
 ```console
@@ -28,4 +30,14 @@ sbt clean
 sbt stage
 ```
 Binaries are generated under *'target/universal/stage'* folder as *bin* and *lib* folders. Simply create  put these folders under a wrapping folder like *monarch*, then executables for MonARCh are ready.
+
+#DatasetUpdater
+
+In order to build the executable binaries for DatasetUpdater, simply execute following commands inside 'datasetupdater/DatasetUpdater' folder after cloning or downloading source code:
+
+```console
+mvn clean
+mvn install
+```
+Binaries are generated under the *'target'* folder as *DatasetUpdater-0.0.1-SNAPSHOT-allinone.jar*. Simply rename the jar as *DatasetUpdater.jar*, then executable for DatasetUpdater is ready.
 
