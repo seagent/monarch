@@ -92,6 +92,7 @@ Client actor program for sending SPARQL queries to MonARCh is already present un
 * *<ins>port:</ins>* port for the client node
 * *<ins>query_count:</ins>* total query count that is to be sent to the MonARCh cluster
 * *<ins>query_percent_in_min:</ins>* query percentage that is wanted to be sent to the MonARCh cluster per minute until reaching the total query count
+* *<ins>selectivity:</ins>* selectivity of that query template (Choices are: MOST, HIGH, MID, LOW, LEAST)
 * *<ins>sub_res_count_dbp:</ins>* sub result count that is wanted to be returned from the relevant DBpedia sub query (Choices are: ALL, 4000, 3000, 2000, 1000)
 * *<ins>sub_res_count_nyt:</ins>* sub result count that is wanted to be returned from the relevant Nytimes sub query (Choices are: ALL, 4000, 3000, 2000, 1000)
 * *<ins>sub_res_count_stock:</ins>* sub result count that is wanted to be returned from the relevant Stockmarket sub query (Choices are: ALL, 4000, 3000, 2000, 1000)
