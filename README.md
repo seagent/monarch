@@ -9,6 +9,6 @@ and notifies the relevant agent with new result.
 
 # Using MonARCh in Evaluation Execution
 
-Firstly SPARQL endpoints of the DBpedia, Nytimes and Stockmarket datasets should be set up and running.
+Firstly SPARQL endpoints of DBpedia, Nytimes and Stockmarket datasets should be set up and running.
 
-After that DBpedia and Nytimes data is need to be insterted into the datasets. Then using ArtificialDataGenerator in [seagent/datasetupdater](https://github.com/seagent/datasetupdater) Stockmarket dataset is created from scratch and data enrichment is made for DBpedia and Nyrimes datasets.
+After that DBpedia and Nytimes data is need to be insterted into the datasets. Then using ArtificialDataGenerator in [seagent/datasetupdater](https://github.com/seagent/datasetupdater) Stockmarket dataset is created from scratch and data enrichment is made for DBpedia and Nytimes datasets.
