@@ -80,3 +80,18 @@ For updating StockMarket following command is executed in terminal:
 ```console
 java -cp DatasetUpdater.jar main.MainStockUpdater
 ```
+### Setting up MonARCh Client Program
+
+Client actor program for sending SPARQL queries to MonARCh is already present under the monarch folder containing the binaries. Also in order to execute the generated Agent for the evaluation below command is executed:
+
+```console
+./monarch/bin/agent-app ip_address port query_count query_percent_in_min selectivity sub_res_count_dbp sub_res_count_nyt sub_res_count_stockmarket
+```
+
+* ip_address: ip address of the client node
+* port: port for the client node
+* query_count: total query count that is to be sent to the MonARCh cluster
+* query_percent_in_min: query percentage that is wanted to be sent to the MonARCh cluster per minute until reaching the total query count
+* sub_res_count_dbp: sub result count that is wanted to be returned from the relevant DBpedia sub query (Choices are: ALL, 4000, 3000, 2000, 1000)
+* sub_res_count_nyt: sub result count that is wanted to be returned from the relevant Nytimes sub query (Choices are: ALL, 4000, 3000, 2000, 1000)
+* sub_res_count_stock: sub result count that is wanted to be returned from the relevant Stockmarket sub query (Choices are: ALL, 4000, 3000, 2000, 1000)
