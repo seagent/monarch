@@ -7,7 +7,7 @@ Agents register their federated queries to MonARCh via a client actor system. Th
 frequencies of datasets. If it detects any change in the dataset related to sub query result, it generates new main result using hash join algorithm
 and notifies the relevant agent with new result.
 
-## Using MonARCh as Service in Evaluation Execution
+## Using MonARCh as a Service in Evaluation Execution
 
 ### Preparing the Environment
 
