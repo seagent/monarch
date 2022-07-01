@@ -88,7 +88,7 @@ Client actor program for sending SPARQL queries to MonARCh is already present un
 ./monarch/bin/agent-app ip_address port query_count query_percent_in_min selectivity sub_res_count_dbp sub_res_count_nyt sub_res_count_stockmarket
 ```
 
-* ip_address: ip address of the client node
+* *<ins>ip_address:</ins>* ip address of the client node
 * port: port for the client node
 * query_count: total query count that is to be sent to the MonARCh cluster
 * query_percent_in_min: query percentage that is wanted to be sent to the MonARCh cluster per minute until reaching the total query count
