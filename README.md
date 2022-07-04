@@ -15,7 +15,7 @@ Firstly SPARQL endpoints of DBpedia, Nytimes and Stockmarket datasets should be 
 
 After that DBpedia and Nytimes data is needed to be insterted into the datasets. Then using ArtificialDataGenerator in [seagent/datasetupdater](https://github.com/seagent/datasetupdater) Stockmarket dataset is created from scratch and data enrichment is made for DBpedia and Nytimes datasets.
 
-**<ins>Note:</ins>** In order to track the actor count and query count metrics, Redis server is needed to be set up and configured to be used by RedisStore class in MonARCh source code.
+**<ins>Note:</ins>** *In order to track the actor count and query count metrics, Redis server is needed to be set up and configured to be used by RedisStore class in MonARCh source code.*
 
 ### Preparing the Executable Binaries
 
@@ -48,7 +48,7 @@ In order to monitor more queries, JVM heap of the cluster nodes need to be set a
 ```console
 export _JAVA_OPTIONS="-Xmx30g"
 ```
-Note: 30g is just an example amount, just simply change ip with the amount of heap memory you desired
+**<ins>Note:</ins>** *30g is just an example amount, just simply change ip with the amount of heap memory you desired*
 
 
 Firstly, in a unix based terminal we need to change the permissions of monarch folder as executable with the command below:
