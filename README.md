@@ -33,13 +33,13 @@ Binaries are generated under *<ins>'target/universal/stage'</ins>* folder as *<i
 
 #### <ins>DatasetUpdater</ins>
 
-In order to build the executable binaries for DatasetUpdater, simply execute following commands inside **'datasetupdater/DatasetUpdater'** folder after cloning or downloading source code:
+In order to build the executable binaries for DatasetUpdater, simply execute following commands inside *'datasetupdater/DatasetUpdater'* folder after cloning or downloading source code:
 
 ```console
 mvn clean
 mvn install
 ```
-Binaries are generated under the *'<ins>target</ins>'* folder as *<ins>DatasetUpdater-0.0.1-SNAPSHOT-allinone.jar</ins>*. Simply rename the jar as *<ins>DatasetUpdater.jar</ins>*, then executable for DatasetUpdater is ready.
+Binaries are generated under the *'<ins>target</ins>'* folder as **DatasetUpdater-0.0.1-SNAPSHOT-allinone.jar**. Simply rename the jar as **DatasetUpdater.jar**, then executable for *DatasetUpdater* is ready.
 
 ### Setting up the Cluster
 
@@ -96,3 +96,5 @@ Client actor program for sending SPARQL queries to MonARCh is already present un
 * *<ins>sub_res_count_dbp:</ins>* sub result count that is wanted to be returned from the relevant DBpedia sub query (Choices are: ALL, 4000, 3000, 2000, 1000)
 * *<ins>sub_res_count_nyt:</ins>* sub result count that is wanted to be returned from the relevant Nytimes sub query (Choices are: ALL, 4000, 3000, 2000, 1000)
 * *<ins>sub_res_count_stock:</ins>* sub result count that is wanted to be returned from the relevant Stockmarket sub query (Choices are: ALL, 4000, 3000, 2000, 1000)
+
+For example to run evaluation by running agent-app on node with ip address as '155.223.25.4', port as '2553', query count as '2500', query percentage in min as '0.2' meaning that '500' queries per min, selectivity as 'MID' and sub result count for DBpedia, Nytimes and Stockmarket as 1000 meaning that '%80' sub result filtering ratio
