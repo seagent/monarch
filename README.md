@@ -5,7 +5,7 @@ converting to federated queries via a query federator engine such as WoDQA) over
 
 Agents register their federated queries to MonARCh via a client actor system. Then MonARCh schedules itself for executing sub queries according to change 
 frequencies of datasets. If it detects any change in the dataset related to sub query result, it generates new main result using hash join algorithm
-and notifies the relevant agent with new result.
+and notifies the relevant agent with the new result.
 
 ## Using MonARCh as a Service in Evaluation Execution
 
@@ -15,7 +15,7 @@ Firstly SPARQL endpoints of DBpedia, Nytimes and Stockmarket datasets should be 
 
 After that DBpedia and Nytimes data is need to be insterted into the datasets. Then using ArtificialDataGenerator in [seagent/datasetupdater](https://github.com/seagent/datasetupdater) Stockmarket dataset is created from scratch and data enrichment is made for DBpedia and Nytimes datasets.
 
-Note: In order to track the actor count and query count metrics, Redis server is needed to be set up and configured to be used by RedisStore class in MonARCh source code.
+**Note:** In order to track the actor count and query count metrics, Redis server is needed to be set up and configured to be used by RedisStore class in MonARCh source code.
 
 ### Preparing the Executable Codes
 
