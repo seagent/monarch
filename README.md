@@ -93,9 +93,9 @@ Client actor program for sending SPARQL queries to MonARCh is already present un
 * ***<ins>query_count:</ins>*** total query count that is to be sent to the MonARCh cluster
 * ***<ins>query_percent_in_min:</ins>*** query percentage that is wanted to be sent to the MonARCh cluster per minute until reaching the total query count
 * ***<ins>selectivity:</ins>*** selectivity of that query template (Choices are: MOST, HIGH, MID, LOW, LEAST)
-* ***<ins>sub_res_count_dbp:</ins>*** sub result count that is wanted to be returned from the relevant DBpedia sub query (Choices are: ALL, 4000, 3000, 2000, 1000)
-* ***<ins>sub_res_count_nyt:</ins>*** sub result count that is wanted to be returned from the relevant Nytimes sub query (Choices are: ALL, 4000, 3000, 2000, 1000)
-* ***<ins>sub_res_count_stock:</ins>*** sub result count that is wanted to be returned from the relevant Stockmarket sub query (Choices are: ALL, 4000, 3000, 2000, 1000)
+* ***<ins>sub_res_count_dbp:</ins>*** sub result count that is wanted to be retrieved from the relevant DBpedia sub query (Choices are: ALL, 4000, 3000, 2000, 1000)
+* ***<ins>sub_res_count_nyt:</ins>*** sub result count that is wanted to be retrieved from the relevant Nytimes sub query (Choices are: ALL, 4000, 3000, 2000, 1000)
+* ***<ins>sub_res_count_stock:</ins>*** sub result count that is wanted to be retrieved from the relevant Stockmarket sub query (Choices are: ALL, 4000, 3000, 2000, 1000)
 
 For example below command is for running evaluation by running agent-app on node with ip address as **<ins>'155.223.25.4'</ins>**, port as **<ins>'2553'</ins>**, query count as **<ins>'2500'</ins>**, query percentage in min as **<ins>'0.2'</ins>** meaning that **<ins>'500'</ins>** queries per min, selectivity as **<ins>'MID'</ins>** and sub result count for DBpedia, Nytimes and Stockmarket as **<ins>1000</ins>** meaning that **<ins>'%80'</ins>** sub result filtering ratio:
 
