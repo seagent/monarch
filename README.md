@@ -33,13 +33,13 @@ Binaries are generated under *<ins>'target/universal/stage'</ins>* folder as *<i
 
 #### <ins>DatasetUpdater</ins>
 
-In order to build the executable binaries for DatasetUpdater, simply execute following commands inside *'datasetupdater/DatasetUpdater'* folder after cloning or downloading source code:
+In order to build the executable binaries for DatasetUpdater, simply execute following commands inside *<ins>'datasetupdater/DatasetUpdater'<ins>* folder after cloning or downloading source code:
 
 ```console
 mvn clean
 mvn install
 ```
-Binaries are generated under the *'<ins>target</ins>'* folder as **DatasetUpdater-0.0.1-SNAPSHOT-allinone.jar**. Simply rename the jar as **DatasetUpdater.jar**, then executable for *DatasetUpdater* is ready.
+Binaries are generated under the *'<ins>target</ins>'* folder as ***DatasetUpdater-0.0.1-SNAPSHOT-allinone.jar***. Simply rename the jar as ***DatasetUpdater.jar***, then executable for *DatasetUpdater* is ready.
 
 ### Setting up the Cluster
 
