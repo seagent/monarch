@@ -13,13 +13,13 @@ and notifies the relevant agent with the new result.
 
 Firstly SPARQL endpoints of DBpedia, Nytimes and Stockmarket datasets should be set up and running.
 
-After that DBpedia and Nytimes data is need to be insterted into the datasets. Then using ArtificialDataGenerator in [seagent/datasetupdater](https://github.com/seagent/datasetupdater) Stockmarket dataset is created from scratch and data enrichment is made for DBpedia and Nytimes datasets.
+After that DBpedia and Nytimes data is needed to be insterted into the datasets. Then using ArtificialDataGenerator in [seagent/datasetupdater](https://github.com/seagent/datasetupdater) Stockmarket dataset is created from scratch and data enrichment is made for DBpedia and Nytimes datasets.
 
 **<ins>Note:</ins>** In order to track the actor count and query count metrics, Redis server is needed to be set up and configured to be used by RedisStore class in MonARCh source code.
 
-### Preparing the Executable Codes
+### Preparing the Executable Binaries
 
-After the environment has been set up, executable codes of MonARCh and DatasetUpdater are need to be prepared. MonARCh is written in Scala, and DatasetUpdater is written in Java.
+After the environment has been set up, executable binaries of MonARCh and DatasetUpdater are need to be prepared. MonARCh is written in Scala, and DatasetUpdater is written in Java.
 
 #### <ins>MonARCh</ins>
 
