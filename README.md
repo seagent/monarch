@@ -48,7 +48,7 @@ In order to monitor more queries, JVM heap of the cluster nodes need to be set a
 ```console
 export _JAVA_OPTIONS="-Xmx30g"
 ```
-  **<ins>Note:</ins>** *30g is just an example amount, you may change ***<ins>'30g'</ins>*** with the amount of heap memory you desired*
+  **<ins>Note:</ins>** *<ins>30g</ins> is just an example amount, you may change it with the amount of heap memory you desired*
 
 
 Firstly, in a unix based terminal we need to change the permissions of monarch folder as executable with the command below:
