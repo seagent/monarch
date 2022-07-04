@@ -15,7 +15,7 @@ Firstly SPARQL endpoints of DBpedia, Nytimes and Stockmarket datasets should be 
 
 After that DBpedia and Nytimes data is need to be insterted into the datasets. Then using ArtificialDataGenerator in [seagent/datasetupdater](https://github.com/seagent/datasetupdater) Stockmarket dataset is created from scratch and data enrichment is made for DBpedia and Nytimes datasets.
 
-**Note:** In order to track the actor count and query count metrics, Redis server is needed to be set up and configured to be used by RedisStore class in MonARCh source code.
+**<ins>Note:</ins>** In order to track the actor count and query count metrics, Redis server is needed to be set up and configured to be used by RedisStore class in MonARCh source code.
 
 ### Preparing the Executable Codes
 
