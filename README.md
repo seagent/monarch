@@ -23,23 +23,23 @@ After the environment has been set up, executable binaries of MonARCh and Datase
 
 #### <ins>MonARCh</ins>
 
-In order to build the executable binaries for MonARCh, simply execute following commands inside 'monarch-master' folder after cloning or downloading source code:
+In order to build the executable binaries for MonARCh, simply execute following commands inside <ins>'monarch-master'</ins> folder after cloning or downloading source code:
 
 ```console
 sbt clean
 sbt stage
 ```
-Binaries are generated under *'target/universal/stage'* folder as *bin* and *lib* folders. Simply create  put these folders under a wrapping folder like *monarch*, then executables for MonARCh are ready.
+Binaries are generated under *<ins>'target/universal/stage'</ins>* folder as *<ins>bin</ins>* and *<ins>lib</ins>* folders. Simply create  put these folders under a wrapping folder like *<ins>monarch</ins>*, then executables for MonARCh are ready.
 
 #### <ins>DatasetUpdater</ins>
 
-In order to build the executable binaries for DatasetUpdater, simply execute following commands inside 'datasetupdater/DatasetUpdater' folder after cloning or downloading source code:
+In order to build the executable binaries for DatasetUpdater, simply execute following commands inside <ins>'datasetupdater/DatasetUpdater'</ins> folder after cloning or downloading source code:
 
 ```console
 mvn clean
 mvn install
 ```
-Binaries are generated under the *'target'* folder as *DatasetUpdater-0.0.1-SNAPSHOT-allinone.jar*. Simply rename the jar as *DatasetUpdater.jar*, then executable for DatasetUpdater is ready.
+Binaries are generated under the *'<ins>target</ins>'* folder as *<ins>DatasetUpdater-0.0.1-SNAPSHOT-allinone.jar</ins>*. Simply rename the jar as *<ins>DatasetUpdater.jar</ins>*, then executable for DatasetUpdater is ready.
 
 ### Setting up the Cluster
 
@@ -57,12 +57,12 @@ Firstly, in a unix based terminal we need to change the permissions of monarch f
 chmod 755 -R monarch/*
 ```
 
-For the master node simply execute following command by replacing *ip_address* with the ip address of that node.
+For the master node simply execute following command by replacing *<ins>ip_address</ins>* with the ip address of that node.
 
 ```console
 ./monarch/bin/app ip_address 2551 clean
 ```
-For joining new nodes to the cluster, simply execute following command by replacing *ip_address* with the ip address of that node
+For joining new nodes to the cluster, simply execute following command by replacing *<ins>ip_address</ins>* with the ip address of that node
 
 ```console
 ./monarch/bin/app ip_address 2551
