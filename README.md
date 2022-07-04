@@ -19,7 +19,7 @@ After that DBpedia and Nytimes data is needed to be insterted into the datasets.
 
 ### Preparing the Executable Binaries
 
-After the environment has been set up, executable binaries of MonARCh and DatasetUpdater are need to be prepared. MonARCh is written in Scala, and DatasetUpdater is written in Java.
+After the environment has been set up, executable binaries of MonARCh and DatasetUpdater are needed to be prepared. MonARCh is written in Scala, and DatasetUpdater is written in Java.
 
 #### <ins>MonARCh</ins>
 
