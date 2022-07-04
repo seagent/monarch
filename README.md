@@ -82,7 +82,7 @@ java -cp DatasetUpdater.jar main.MainStockUpdater
 ```
 ### Setting up MonARCh Client Program
 
-Binaries for client actor system for sending SPARQL queries to MonARCh is already present under the monarch folder containing the binaries. Also in order to execute the generated Agent for the evaluation below command is executed:
+Client actor program for sending SPARQL queries to MonARCh is already present under the monarch folder containing the binaries. Also in order to execute the generated Agent for the evaluation below command is executed:
 
 ```console
 ./monarch/bin/agent-app ip_address port query_count query_percent_in_min selectivity sub_res_count_dbp sub_res_count_nyt sub_res_count_stockmarket
