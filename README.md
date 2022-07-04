@@ -33,7 +33,7 @@ Binaries are generated under *<ins>'target/universal/stage'</ins>* folder as *<i
 
 #### <ins>DatasetUpdater</ins>
 
-In order to build the executable binaries for DatasetUpdater, simply execute following commands inside *_'datasetupdater/DatasetUpdater'_* folder after cloning or downloading source code:
+In order to build the executable binaries for DatasetUpdater, simply execute following commands inside **'datasetupdater/DatasetUpdater'** folder after cloning or downloading source code:
 
 ```console
 mvn clean
