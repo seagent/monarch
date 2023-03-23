@@ -2,12 +2,12 @@ package actor
 
 import akka.actor.Props
 import akka.cluster.sharding.ClusterSharding
-import monitoring.actor.{SubQueryExecutor, SubQueryDistributor}
+import monitoring.actor.{Executor, Distributor}
 import monitoring.message.ExecuteSubQuery
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 
-class MockSubQueryDistributor extends SubQueryDistributor {
+class MockSubQueryDistributor extends Distributor {
   override protected def distribute(query: String, endpoints: Seq[String]): Unit = {
     endpoints foreach {
       endpoint =>

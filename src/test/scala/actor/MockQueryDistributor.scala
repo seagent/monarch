@@ -4,12 +4,12 @@ import java.util
 
 import akka.actor.{ActorRef, Props}
 import main.DirectedQuery
-import monitoring.actor.QueryDistributor
+import monitoring.actor.Federator
 import monitoring.message.{FederateSubQuery, Result}
 
 import scala.collection.JavaConverters._
 
-class MockQueryDistributor extends QueryDistributor {
+class MockQueryDistributor extends Federator {
 
   private val GEO_JOIN_RESULT_NAME = "src/test/files/geo-join.json"
   private val LMDB_JOIN_RESULT_NAME = "src/test/files/lmdb-join.json"

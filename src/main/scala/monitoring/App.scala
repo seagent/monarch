@@ -68,26 +68,26 @@ object App {
 
     val federatorRegion = ClusterSharding(system).start(
       typeName = "QueryDistributor",
-      entityProps = Props[QueryDistributor],
+      entityProps = Props[Federator],
       settings = ClusterShardingSettings(system),
-      extractEntityId = QueryDistributor.extractEntityId,
-      extractShardId = QueryDistributor.extractShardId)
+      extractEntityId = Federator.extractEntityId,
+      extractShardId = Federator.extractShardId)
 
     ClusterClientReceptionist(system).registerService(federatorRegion)
 
     ClusterSharding(system).start(
       typeName = "SubQueryDistributor",
-      entityProps = Props[SubQueryDistributor],
+      entityProps = Props[Distributor],
       settings = ClusterShardingSettings(system),
-      extractEntityId = SubQueryDistributor.extractEntityId,
-      extractShardId = SubQueryDistributor.extractShardId)
+      extractEntityId = Distributor.extractEntityId,
+      extractShardId = Distributor.extractShardId)
 
     ClusterSharding(system).start(
       typeName = "SubQueryExecutor",
-      entityProps = Props[SubQueryExecutor],
+      entityProps = Props[Executor],
       settings = ClusterShardingSettings(system),
-      extractEntityId = SubQueryExecutor.extractEntityId,
-      extractShardId = SubQueryExecutor.extractShardId)
+      extractEntityId = Executor.extractEntityId,
+      extractShardId = Executor.extractShardId)
 /*
     ClusterSharding(system).start(
       typeName = "ParallelJoinManager",
