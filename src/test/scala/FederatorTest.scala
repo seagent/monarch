@@ -1,4 +1,4 @@
-import actor.MockQueryDistributor
+import actor.MockFederator
 import akka.actor.{ActorSystem, PoisonPill, Props}
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import com.hp.hpl.jena.query.ResultSetFactory
@@ -26,18 +26,18 @@ class FederatorTest extends TestKit(ActorSystem("QueryDistributorTest")) with Im
       val probe = TestProbe()
 
       // create a new actor
-      val qf = system.actorOf(Props(new MockQueryDistributor))
-      probe watch qf
+      val fed = system.actorOf(Props(new MockFederator))
+      probe watch fed
       // send execute sub query message
-      qf ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY, ""+qf.path.toString)
+      fed ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY, ""+fed.path.toString)
 
       //create expected message instance
       val expectedResult = createExpectedResult(TestUtils.DBPEDIA_LMDB_GEO_JOIN_RESULT_NAME, 1)
       // check if received message is the expected one
       expectMsg(expectedResult)
       // kill actor instance
-      qf ! PoisonPill
-      probe.expectTerminated(qf)
+      fed ! PoisonPill
+      probe.expectTerminated(fed)
     }
 
     "notify change to its register list" in {
@@ -45,10 +45,10 @@ class FederatorTest extends TestKit(ActorSystem("QueryDistributorTest")) with Im
       val probe = TestProbe()
 
       // create a new actor
-      val qf = system.actorOf(Props(new MockQueryDistributor))
-      probe watch qf
+      val fed = system.actorOf(Props(new MockFederator))
+      probe watch fed
       // send execute sub query message
-      qf ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY, qf.path.toString)
+      fed ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY, fed.path.toString)
 
       //create expected message instance
       val expectedResult = createExpectedResult(TestUtils.DBPEDIA_LMDB_GEO_JOIN_RESULT_NAME, 1)
@@ -61,8 +61,8 @@ class FederatorTest extends TestKit(ActorSystem("QueryDistributorTest")) with Im
       // check if received result is result change message
       expectMsg(10.seconds, expectedChangedResult)
       // kill actor instance
-      qf ! PoisonPill
-      probe.expectTerminated(qf)
+      fed ! PoisonPill
+      probe.expectTerminated(fed)
     }
 
     "return same result if it is not changed and not notify any change" in {
@@ -70,21 +70,21 @@ class FederatorTest extends TestKit(ActorSystem("QueryDistributorTest")) with Im
       val probe = TestProbe()
 
       // create a new actor
-      val qf = system.actorOf(Props(new MockQueryDistributor))
-      probe watch qf
+      val fed = system.actorOf(Props(new MockFederator))
+      probe watch fed
       // send execute sub query message
-      qf ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY, qf.path.toString)
+      fed ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY, fed.path.toString)
 
       //create expected message instance
       val expectedResult = createExpectedResult(TestUtils.DBPEDIA_LMDB_GEO_JOIN_RESULT_NAME, 1)
       expectMsg(expectedResult)
       // send same query again
-      qf ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY, qf.path.toString)
+      fed ! FederateQuery(ClientApp.GOOD_LOOKING_QUERY, fed.path.toString)
       // expect same result
       expectMsg(expectedResult)
       // kill actor instance
-      qf ! PoisonPill
-      probe.expectTerminated(qf)
+      fed ! PoisonPill
+      probe.expectTerminated(fed)
     }
 
 

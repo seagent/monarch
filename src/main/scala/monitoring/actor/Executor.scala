@@ -4,7 +4,7 @@ import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.sharding.ShardRegion
 import com.hp.hpl.jena.query.QueryExecutionFactory
 import monitoring.main.{DbUtils, MonitoringUtils, OrganizationConstants}
-import monitoring.message.{ExecuteSubQuery, Result, ResultChange, ScheduledQuery}
+import monitoring.message.{ExecuteServiceClause, Result, ResultChange, ScheduledServiceClause}
 import org.apache.spark.util.SizeEstimator
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -12,13 +12,13 @@ import scala.concurrent.duration._
 
 object Executor {
   val extractEntityId: ShardRegion.ExtractEntityId = {
-    case esq@ExecuteSubQuery(_, _) => (esq.hashCode.toString, esq)
+    case esc@ExecuteServiceClause(_, _) => (esc.hashCode.toString, esc)
   }
 
   private val numberOfShards = 20
 
   val extractShardId: ShardRegion.ExtractShardId = {
-    case esq@ExecuteSubQuery(_, _) => (esq.hashCode % numberOfShards).toString
+    case esc@ExecuteServiceClause(_, _) => (esc.hashCode % numberOfShards).toString
   }
 }
 
@@ -40,42 +40,42 @@ class Executor extends Actor with ActorLogging {
   }
 
   override def receive: Receive = {
-    case esq@ExecuteSubQuery(query, endpoint) =>
+    case esc@ExecuteServiceClause(query, endpoint) =>
       //log.info("Sender path: {}, self path {}",sender().path,self.path)
-      log.debug("Hash Code for Execute Sub Query: [{}], and Query Value: [{}], Endpoint Value: [{}]", esq.hashCode, query, endpoint)
+      log.debug("Hash Code for Execute SERVICE Clause: [{}], and Query Value: [{}], Endpoint Value: [{}]", esc.hashCode, query, endpoint)
       registerSender
       if (queryResult.isDefined) {
         sender ! queryResult.get
         val sizeInBytes = SizeEstimator.estimate(queryResult.get)
-        log.info("Size of the contained result message sent from SubQueryExecutor to SubQueryDistributor is: [{}] Bytes, and is [{}]",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes))
+        log.info("Size of the contained result message sent from Executor to Distributor is: [{}] Bytes, and is [{}]",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes))
 
       } else {
-        val result = executeQuery(query, endpoint)
+        val result = executeServiceClause(query, endpoint)
         queryResult = Some(result)
         sender ! queryResult.get
         //TODO: ilerde hashmap ten bakarak yapacaz ve endpointler ayrı graph olmalı
         if (!query.contains(OrganizationConstants.OWL_SAME_AS)) {
-          schedule(ScheduledQuery(esq))
+          schedule(ScheduledServiceClause(esc))
         }
       }
       val sizeInBytes = SizeEstimator.estimate(queryResult.get)
-      log.info("Size of the new result message sent from SubQueryExecutor to SubQueryDistributor is: [{}] Bytes, and is [{}]",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes))
+      log.info("Size of the new result message sent from Executor to Distributor is: [{}] Bytes, and is [{}]",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes))
 
-    case sq@ScheduledQuery(esq) =>
-      //log.info("Hash Code for Scheduled Sub Query: [{}], and Scheduled Query Value: [{}]", sq.hashCode, esq)
-      val result = executeQuery(esq.query, esq.endpoint)
+    case ssc@ScheduledServiceClause(esc) =>
+      //log.info("Hash Code for Scheduled SERVICE Clause: [{}], and Scheduled SERVICE Clause Value: [{}]", ssc.hashCode, esc)
+      val result = executeServiceClause(esc.query, esc.endpoint)
       if (!queryResult.contains(result)) {
-        log.info("A change has been detected for the sub-query [{}], and endpoint [{}]", esq.query, esq.endpoint)
+        log.info("A change has been detected for the SERVICE clause [{}], and endpoint [{}]", esc.query, esc.endpoint)
         queryResult = Some(result)
         val resultChange = ResultChange(result, System.currentTimeMillis())
         notifyRegisteryList(resultChange)
         val sizeInBytes = SizeEstimator.estimate(resultChange)
-        log.info("Size of the result change message sent from SubQueryExecutor to SubQueryDistributor is: [{}] Bytes, and is [{}]. Message has been notified [{}] times",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes),register.size)
+        log.info("Size of the result change message sent from Executor to Distributor is: [{}] Bytes, and is [{}]. Message has been notified [{}] times",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes),register.size)
       }
   }
 
-  protected def schedule(sq: ScheduledQuery) = {
-    context.system.scheduler.schedule(10.minutes, 10.minutes, self, sq)
+  protected def schedule(ssc: ScheduledServiceClause) = {
+    context.system.scheduler.schedule(10.minutes, 10.minutes, self, ssc)
   }
 
   private def notifyRegisteryList(message: AnyRef) = {
@@ -86,7 +86,7 @@ class Executor extends Actor with ActorLogging {
     }
   }
 
-  protected def executeQuery(query: String, endpoint: String) = {
+  protected def executeServiceClause(query: String, endpoint: String) = {
     val execution = QueryExecutionFactory.sparqlService(endpoint, query)
     val result = MonitoringUtils.convertRdf2Result(execution.execSelect())
     execution.close()

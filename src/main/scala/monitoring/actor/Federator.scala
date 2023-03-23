@@ -52,13 +52,13 @@ class Federator extends Actor with ActorLogging {
       federateQuery = Some(fq)
       DbUtils.incrementQueryCount(fq)
       val sizeInBytes = SizeEstimator.estimate(federateQuery)
-      log.info("Size of the FederateQuery message sent from Agent to QueryDistributor is: [{}] Bytes, and is [{}]",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes))
+      log.info("Size of the FederateQuery message sent from Agent to Federator is: [{}] Bytes, and is [{}]",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes))
       log.debug("Hash Code for Federate Query: [{}], and Query Value: [{}]", fq.hashCode, query)
       registerSender(senderPath)
       if (queryResult.isDefined) {
         sender ! queryResult.get
         val sizeInBytes = SizeEstimator.estimate(queryResult.get)
-        log.info("Size of the contained result message sent from QueryDistributor to Agent is: [{}] Bytes, and is [{}]",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes))
+        log.info("Size of the contained result message sent from Federator to Agent is: [{}] Bytes, and is [{}]",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes))
       } else {
         federate(query)
       }
@@ -70,8 +70,8 @@ class Federator extends Actor with ActorLogging {
   }
 
   protected def federate(query: String): Unit = {
-    val subQueryFederatorRegion = ClusterSharding.get(context.system).shardRegion("SubQueryDistributor")
-    federate(query, subQueryFederatorRegion)
+    val distributorRegion = ClusterSharding.get(context.system).shardRegion("Distributor")
+    federate(query, distributorRegion)
   }
 
   protected def federate(query: String, federator: ActorRef): Unit = {
@@ -94,11 +94,11 @@ class Federator extends Actor with ActorLogging {
         log.info("Result has been constructed for the federated query [{}]", federateQuery.get.query)
         notifyRegisteryList(receivedResult)
         log.info("Federated query has been performed in: [{}] milliseconds", System.currentTimeMillis() - startTimeInMillis)
-        log.info("Size of the new result message sent from QueryDistributor to Agent is: [{}] Bytes, and is [{}]. Message has been notified [{}] times",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes),registeryList.size)
+        log.info("Size of the new result message sent from Federator to Agent is: [{}] Bytes, and is [{}]. Message has been notified [{}] times",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes),registeryList.size)
       } else if (!queryResult.contains(receivedResult)) {
         log.info("A result change has been detected for the federated query [{}], and notified in [{}] milliseconds", federateQuery.get.query, System.currentTimeMillis() - startTimeInMillis)
         notifyRegisteryList(receivedResult)
-        log.info("Size of the result change message sent from QueryDistributor to Agent is: [{}] Bytes, and is [{}]. Message has been notified [{}] times",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes),registeryList.size)
+        log.info("Size of the result change message sent from Federator to Agent is: [{}] Bytes, and is [{}]. Message has been notified [{}] times",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes),registeryList.size)
       }
       queryResult = Some(receivedResult)
     }
@@ -126,20 +126,20 @@ class Federator extends Actor with ActorLogging {
     self ! resultChange.result
   }
 
-  protected def distribute(subQueryFederatorRegion: ActorRef, directedQueries: util.List[DirectedQuery]) = {
+  protected def distribute(distributorRegion: ActorRef, directedQueries: util.List[DirectedQuery]) = {
     resultCount = directedQueries.size - 1
     directedQueries forEach {
       directedQuery => {
-        directToSubQueryFederator(subQueryFederatorRegion, directedQuery)
+        directToDistributor(distributorRegion, directedQuery)
       }
     }
   }
 
-  protected def directToSubQueryFederator(subQueryFederatorRegion: ActorRef, directedQuery: DirectedQuery): Unit = {
-    val federateSubQuery = FederateSubQuery(directedQuery.getQuery, directedQuery.getEndpoints.asScala)
-    subQueryFederatorRegion ! federateSubQuery
-    val sizeInBytes = SizeEstimator.estimate(federateSubQuery)
-    log.info("Size of the FederateSubQuery message sent from QueryDistributor to SubQueryDistributor is: [{}] Bytes, and is [{}]",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes))
+  protected def directToDistributor(distributorRegion: ActorRef, directedQuery: DirectedQuery): Unit = {
+    val federateServiceClause = DistributeServiceClause(directedQuery.getQuery, directedQuery.getEndpoints.asScala)
+    distributorRegion ! federateServiceClause
+    val sizeInBytes = SizeEstimator.estimate(federateServiceClause)
+    log.info("Size of the DistributeServiceClause message sent from Federator to Distributor is: [{}] Bytes, and is [{}]",sizeInBytes, MonitoringUtils.formatByteValue(sizeInBytes))
   }
 
   private def registerSender(senderPath: String) = {

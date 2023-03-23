@@ -1,16 +1,16 @@
 import TestUtils.RESULT_FILE_NAME
-import actor.MockSubQueryExecutor
+import actor.MockExecutor
 import akka.actor.{ActorSystem, PoisonPill, Props}
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import com.hp.hpl.jena.query.{ResultSet, ResultSetFactory}
 import com.hp.hpl.jena.sparql.resultset.ResultsFormat
 import monitoring.main.MonitoringUtils
-import monitoring.message.{ExecuteSubQuery, Result, ResultChange}
+import monitoring.message.{ExecuteServiceClause, Result, ResultChange}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
 
-class ExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) with ImplicitSender
+class ExecutorTest extends TestKit(ActorSystem("ExecutorTest")) with ImplicitSender
   with WordSpecLike with Matchers with BeforeAndAfterAll {
 
   override def afterAll {
@@ -24,10 +24,10 @@ class ExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) with Imp
       val probe = TestProbe()
 
       // create a new actor
-      val sqe = system.actorOf(Props(new MockSubQueryExecutor))
-      probe watch sqe
+      val exe = system.actorOf(Props(new MockExecutor))
+      probe watch exe
       // send execute sub query message
-      sqe ! ExecuteSubQuery(TestUtils.DBPEDIA_DIRECTOR_SELECT_QUERY, TestUtils.RESULT_FILE_NAME)
+      exe ! ExecuteServiceClause(TestUtils.DBPEDIA_DIRECTOR_SELECT_QUERY, TestUtils.RESULT_FILE_NAME)
 
       //create expected message instance
       val rsExp = ResultSetFactory.load(TestUtils.RESULT_FILE_NAME, ResultsFormat.FMT_RS_JSON)
@@ -35,8 +35,8 @@ class ExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) with Imp
       // check if received message is the expected one
       expectMsg(expectedResult)
       // kill actor instance
-      sqe ! PoisonPill
-      probe.expectTerminated(sqe)
+      exe ! PoisonPill
+      probe.expectTerminated(exe)
     }
 
     "notify a change to its register list" in {
@@ -49,10 +49,10 @@ class ExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) with Imp
       val changedJsonText = TestUtils.changeResultFile(TestUtils.RESULT_FILE_NAME)
 
       // create a sub query executor actor
-      val sqe = system.actorOf(Props(new MockSubQueryExecutor))
-      probe watch sqe
+      val exe = system.actorOf(Props(new MockExecutor))
+      probe watch exe
       // send an execute sub query message
-      sqe ! ExecuteSubQuery(TestUtils.DBPEDIA_DIRECTOR_SELECT_QUERY, TestUtils.RESULT_FILE_NAME)
+      exe ! ExecuteServiceClause(TestUtils.DBPEDIA_DIRECTOR_SELECT_QUERY, TestUtils.RESULT_FILE_NAME)
       // first expect a Result message
       val rsExp = ResultSetFactory.load(TestUtils.RESULT_FILE_NAME, ResultsFormat.FMT_RS_JSON)
       // assert expected message
@@ -65,8 +65,8 @@ class ExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) with Imp
       // check if received result is result change message
       expectMsg(10.seconds, resultChangeMsgExp)
       // kill actor instance
-      sqe ! PoisonPill
-      probe.expectTerminated(sqe)
+      exe ! PoisonPill
+      probe.expectTerminated(exe)
     }
 
     "return same result if it is not changed and not notify any change" in {
@@ -75,10 +75,10 @@ class ExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) with Imp
       // arrange the result file as expected
       TestUtils.changeFileInto(TestUtils.ACTUAL_RESULT_FILE_NAME, RESULT_FILE_NAME)
       // create a new actor
-      val sqe = system.actorOf(Props(new MockSubQueryExecutor))
-      probe watch sqe
+      val exe = system.actorOf(Props(new MockExecutor))
+      probe watch exe
       // send execute sub query message
-      sqe ! ExecuteSubQuery(TestUtils.DBPEDIA_DIRECTOR_SELECT_QUERY, TestUtils.RESULT_FILE_NAME)
+      exe ! ExecuteServiceClause(TestUtils.DBPEDIA_DIRECTOR_SELECT_QUERY, TestUtils.RESULT_FILE_NAME)
 
       //create expected message instance
       val rsExp = ResultSetFactory.load(TestUtils.RESULT_FILE_NAME, ResultsFormat.FMT_RS_JSON)
@@ -86,12 +86,12 @@ class ExecutorTest extends TestKit(ActorSystem("SubQueryExecutorTest")) with Imp
       // check if received message is the expected one
       expectMsg(expectedResult)
       // send same query again
-      sqe ! ExecuteSubQuery(TestUtils.DBPEDIA_DIRECTOR_SELECT_QUERY, TestUtils.RESULT_FILE_NAME)
+      exe ! ExecuteServiceClause(TestUtils.DBPEDIA_DIRECTOR_SELECT_QUERY, TestUtils.RESULT_FILE_NAME)
       // expect same result
       expectMsg(expectedResult)
       // kill actor instance
-      sqe ! PoisonPill
-      probe.expectTerminated(sqe)
+      exe ! PoisonPill
+      probe.expectTerminated(exe)
     }
 
   }

@@ -1,11 +1,8 @@
 package monitoring
 
-import com.hp.hpl.jena.query.{QueryExecutionFactory, QueryFactory, ResultSetFormatter}
-import com.hp.hpl.jena.rdf.model.ModelFactory
+import com.hp.hpl.jena.query.{QueryExecutionFactory, QueryFactory}
 import monitoring.main.{MonitoringUtils, OrganizationConstants}
-import monitoring.message.ExecuteSubQuery
 import org.apache.spark.util.SizeEstimator
-import tr.edu.ege.seagent.wodqa.query.WodqaEngine
 
 object ExampleMain {
   def main(args: Array[String]): Unit = {

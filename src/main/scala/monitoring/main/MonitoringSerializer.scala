@@ -23,13 +23,13 @@ class MonitoringSerializer extends Serializer {
 
     obj match {
       case fq: FederateQuery => Json.toBytes(Json.toJsObject(fq))
-      case fsq: FederateSubQuery => Json.toBytes(Json.toJsObject(fsq))
-      case esq: ExecuteSubQuery => Json.toBytes(Json.toJsObject(esq))
+      case fsc: DistributeServiceClause => Json.toBytes(Json.toJsObject(fsc))
+      case esc: ExecuteServiceClause => Json.toBytes(Json.toJsObject(esc))
       case db: DistributeBuckets => Json.toBytes(Json.toJsObject(db))
       case res: Result => Json.toBytes(Json.toJsObject(res))
       case phj: PerformHashJoin => Json.toBytes(Json.toJsObject(phj))
       case rc: ResultChange => Json.toBytes(Json.toJsObject(rc))
-      case sq: ScheduledQuery => Json.toBytes(Json.toJsObject(sq))
+      case ssc: ScheduledServiceClause => Json.toBytes(Json.toJsObject(ssc))
       case _ => Array[Byte]()
     }
 
@@ -42,13 +42,13 @@ class MonitoringSerializer extends Serializer {
                   clazz: Option[Class[_]]): AnyRef = {
     clazz.get.getSimpleName match {
       case "FederateQuery" => Json.parse(bytes).as[FederateQuery]
-      case "FederateSubQuery" => Json.parse(bytes).as[FederateSubQuery]
-      case "ExecuteSubQuery" => Json.parse(bytes).as[ExecuteSubQuery]
+      case "DistributeServiceClause" => Json.parse(bytes).as[DistributeServiceClause]
+      case "ExecuteServiceClause" => Json.parse(bytes).as[ExecuteServiceClause]
       case "DistributeBuckets" => Json.parse(bytes).as[DistributeBuckets]
       case "Result" => Json.parse(bytes).as[Result]
       case "PerformHashJoin" => Json.parse(bytes).as[PerformHashJoin]
       case "ResultChange" => Json.parse(bytes).as[ResultChange]
-      case "ScheduledQuery" => Json.parse(bytes).as[ScheduledQuery]
+      case "ScheduledServiceClause" => Json.parse(bytes).as[ScheduledServiceClause]
       case _ => None
     }
   }

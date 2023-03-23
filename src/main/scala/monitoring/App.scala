@@ -67,7 +67,7 @@ object App {
     ClusterMetricsExtension(system).subscribe(system.actorOf(MetricsListener.props))
 
     val federatorRegion = ClusterSharding(system).start(
-      typeName = "QueryDistributor",
+      typeName = "Federator",
       entityProps = Props[Federator],
       settings = ClusterShardingSettings(system),
       extractEntityId = Federator.extractEntityId,
@@ -76,14 +76,14 @@ object App {
     ClusterClientReceptionist(system).registerService(federatorRegion)
 
     ClusterSharding(system).start(
-      typeName = "SubQueryDistributor",
+      typeName = "Distributor",
       entityProps = Props[Distributor],
       settings = ClusterShardingSettings(system),
       extractEntityId = Distributor.extractEntityId,
       extractShardId = Distributor.extractShardId)
 
     ClusterSharding(system).start(
-      typeName = "SubQueryExecutor",
+      typeName = "Executor",
       entityProps = Props[Executor],
       settings = ClusterShardingSettings(system),
       extractEntityId = Executor.extractEntityId,
