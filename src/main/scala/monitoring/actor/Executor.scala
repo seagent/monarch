@@ -3,7 +3,7 @@ package monitoring.actor
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.cluster.sharding.ShardRegion
 import com.hp.hpl.jena.query.QueryExecutionFactory
-import monitoring.main.{DbUtils, MonitoringUtils, OrganizationConstants}
+import monitoring.main.{DbUtils, MonitoringUtils}
 import monitoring.message.{ExecuteServiceClause, Result, ResultChange, ScheduledServiceClause}
 import org.apache.spark.util.SizeEstimator
 
@@ -26,6 +26,7 @@ class Executor extends Actor with ActorLogging {
 
   private var register: Vector[ActorRef] = Vector.empty
   private var queryResult: Option[Result] = None
+  private val DBPEDIA = "dbpedia"
 
   override def preStart(): Unit = {
     super.preStart
@@ -53,8 +54,8 @@ class Executor extends Actor with ActorLogging {
         val result = executeServiceClause(query, endpoint)
         queryResult = Some(result)
         sender ! queryResult.get
-        //TODO: ilerde hashmap ten bakarak yapacaz ve endpointler ayrı graph olmalı
-        if (!query.contains(OrganizationConstants.OWL_SAME_AS)) {
+        // dbpedia receives no update for this use case
+        if (!endpoint.contains(DBPEDIA)) {
           schedule(ScheduledServiceClause(esc))
         }
       }
